@@ -1,1 +1,3 @@
-# EduTrack Frontend
+# EduTrack-Front
+
+EduTrack-Front
