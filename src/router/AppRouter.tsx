@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
-import StudentDashboard from "../pages/student/Dashboard";
+import StudentDashboard from "../pages/student/Dashboard";
+
 // 추후 역할별 페이지 import
 
 export default function AppRouter() {

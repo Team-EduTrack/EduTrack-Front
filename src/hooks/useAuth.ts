@@ -1,43 +1,39 @@
 import { useRecoilState } from "recoil";
 import { useMutation } from "@tanstack/react-query";
-import axiosInstance from "../api/axiosInstance";
 import { authState } from "../stores/authStore";
 import { useNavigate } from "react-router-dom";
+import { fetchMyInfo, loginApi } from "../api/auth";
 
-interface LoginPayload {
-  username: string;
-  password: string;
-}
-
-interface LoginResponse {
-    token: string;
-    role: "PRINCIPAL" | "TEACHER" | "STUDENT";
-  }
 
 export function useLogin() {
   const [, setAuth] = useRecoilState(authState);
   const navigate = useNavigate();
 
-  return useMutation<LoginResponse, Error, LoginPayload>({
-    mutationFn: (payload) =>
-      axiosInstance.post("/auth/login", payload).then(res => res.data),
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
-      setAuth({ isLoggedIn: true, token: data.token, role: data.role });
+  return useMutation({
+    mutationFn: loginApi, 
 
-      // 역할에 따른 리다이렉트
-      if (data.role === "STUDENT") {
-        navigate("/student/dashboard");
-      } else if (data.role === "TEACHER") {
-        navigate("/teacher/dashboard");
-      } else if (data.role === "PRINCIPAL") {
-        navigate("/principal/dashboard");
-      } else {
-        navigate("/"); // 기본 경로
-      }
+    async onSuccess(data) {
+      // 토큰 저장
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+
+      // 사용자 정보 조회
+      const me = await fetchMyInfo(); 
+
+      // 상태 저장
+      setAuth({
+        isLoggedIn: true,
+        token: data.accessToken,
+        refreshToken: data.refreshToken,
+        role: me.role,
+        user: me,
+      });
+
+      // 역할 기반 라우팅 (axios는 HTTP 결과를 response.data 안에 넣어서 반환 주의 )
+      if (me.data.role === "STUDENT") navigate("/student/dashboard");
+      if (me.data.role === "TEACHER") navigate("/teacher/dashboard");
+      if (me.data.role === "PRINCIPAL") navigate("/principal/dashboard");
     },
-    onError: (error) => {
-      console.error("Login failed:", error.message);
-    },
-  });
+  });  
+    
 }
