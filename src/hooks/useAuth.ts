@@ -4,6 +4,7 @@ import { authState } from "../stores/authStore";
 import { useNavigate } from "react-router-dom";
 import { fetchMyInfo, loginApi } from "../api/auth";
 
+//auth관련 모든 함수 모음
 
 export function useLogin() {
   const [, setAuth] = useRecoilState(authState);

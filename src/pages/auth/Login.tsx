@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useLogin } from "../../hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const loginMutation = useLogin();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,7 +55,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="btn btn-primary w-full mt-4"
+            className="btn btn-accent w-full mt-4"
             disabled={loginMutation.isLoading}
           >
             로그인
@@ -63,7 +64,7 @@ export default function Login() {
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => Navigate("/")}
+                onClick={() => navigate("/")}
                 className="text-sm text-gray-400 hover:underline"
               >
                 아이디 / 비밀번호 찾기
@@ -72,7 +73,7 @@ export default function Login() {
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => Navigate("/signup")}
+                onClick={() => navigate("/signup")}
                 className="text-sm text-gray-400 hover:underline"
               >
                 회원가입
