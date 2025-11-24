@@ -26,11 +26,10 @@ export function useLogin() {
         isLoggedIn: true,
         token: data.accessToken,
         refreshToken: data.refreshToken,
-        role: me.role,
+        role: me.data.role,
         user: me,
       });
 
-      // 역할 기반 라우팅 (axios는 HTTP 결과를 response.data 안에 넣어서 반환 주의 )
       if (me.data.role === "STUDENT") navigate("/student/dashboard");
       if (me.data.role === "TEACHER") navigate("/teacher/dashboard");
       if (me.data.role === "PRINCIPAL") navigate("/principal/dashboard");

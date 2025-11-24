@@ -55,7 +55,7 @@ export default function Login() {
 
           <button
             type="submit"
-            className="btn btn-accent w-full mt-4"
+            className="btn btn-primary w-full mt-4"
             disabled={loginMutation.isLoading}
           >
             로그인

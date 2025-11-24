@@ -146,7 +146,7 @@ export default function Signup() {
             required={true}
           />
           <button
-            className="btn btn-accent w-full mt-4"
+            className="btn btn-primary w-full mt-4"
             disabled={!isFormValid}
             onClick={handleSignup}
           >

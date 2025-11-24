@@ -77,7 +77,7 @@ export default function EmailInput({
         />
 
         <button
-          className="btn btn-accent whitespace-nowrap"
+          className="btn btn-primary whitespace-nowrap"
           disabled={!isEmailValid || emailSent}
           onClick={handleSendCode}
         >
@@ -105,7 +105,7 @@ export default function EmailInput({
             />
 
             <button
-              className="btn btn-accent"
+              className="btn btn-primary"
               disabled={authCode.length !== 6}
               onClick={handleVerify}
             >
