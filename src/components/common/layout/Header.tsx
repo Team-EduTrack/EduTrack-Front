@@ -50,9 +50,24 @@ export default function Header() {
             <FiBell size={20} />
           </button>
 
-          <button className="btn btn-ghost btn-circle">
-            <FiUser size={20} />
-          </button>
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+              <FiUser size={20} />
+            </label>
+
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box w-40 p-2 shadow"
+            >
+              <li>
+                <button className="justify-between">내 정보</button>
+              </li>
+
+              <li>
+                <button className="text-red-500 font-semibold">로그아웃</button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
