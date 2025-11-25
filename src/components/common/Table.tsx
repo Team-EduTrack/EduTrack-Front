@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 
 interface Column<T> {
-  header: string;
-  accessor: keyof T | ((row: T) => ReactNode);
+  header: ReactNode;
+  accessor: keyof T | ((row: T, index: number) => ReactNode);
   className?: string;
 }
 
@@ -19,8 +19,8 @@ export default function Table<T>({
   keyExtractor,
   emptyMessage = "데이터가 없습니다.",
 }: Props<T>) {
-  const renderCell = (row: T, col: Column<T>) =>
-    typeof col.accessor === "function" ? col.accessor(row) : String(row[col.accessor]);
+  const renderCell = (row: T, col: Column<T>, index: number) =>
+    typeof col.accessor === "function" ? col.accessor(row, index) : String(row[col.accessor]);
 
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-lg">
@@ -52,9 +52,9 @@ export default function Table<T>({
                   rowIdx !== data.length - 1 ? "border-b border-gray-100" : ""
                 }`}
               >
-                {columns.map((col, idx) => (
-                  <td key={idx} className={`${col.className || "text-center"} text-sm text-gray-900 py-4`}>
-                    {renderCell(row, col)}
+                {columns.map((col, colIdx) => (
+                  <td key={colIdx} className={`${col.className || "text-center"} text-sm text-gray-900 py-4`}>
+                    {renderCell(row, col, rowIdx)}
                   </td>
                 ))}
               </tr>

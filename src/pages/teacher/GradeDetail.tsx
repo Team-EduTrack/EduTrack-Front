@@ -27,7 +27,7 @@ export default function GradeDetail() {
 
   return (
     <Page>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <Card>
           <LectureHeader
             name={mockLecture.name}
@@ -58,16 +58,16 @@ export default function GradeDetail() {
         </Card>
 
         <Card>
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-12">
             <div>
-              <h3 className="text-sm font-medium text-gray-700 text-center mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
                 수강생 전체 단원별 정답률
               </h3>
-              <div className="flex items-end justify-center gap-2 h-48">
+              <div className="flex items-end justify-center gap-3 h-44">
                 {mockUnitScores.map((score, index) => (
                   <div
                     key={index}
-                    className="w-8 bg-blue-400 rounded-t"
+                    className="w-10 bg-blue-400 rounded-t transition-all hover:bg-blue-500"
                     style={{ height: `${(score / maxScore) * 160}px` }}
                   />
                 ))}
@@ -75,14 +75,14 @@ export default function GradeDetail() {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-700 text-center mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
                 다른 강의평균 성적
               </h3>
-              <div className="flex items-end justify-center gap-2 h-48">
+              <div className="flex items-end justify-center gap-3 h-44">
                 {mockOtherLectureScores.map((score, index) => (
                   <div
                     key={index}
-                    className="w-8 bg-blue-400 rounded-t"
+                    className="w-10 bg-blue-400 rounded-t transition-all hover:bg-blue-500"
                     style={{ height: `${(score / maxScore) * 160}px` }}
                   />
                 ))}
