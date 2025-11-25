@@ -3,6 +3,9 @@ import Page from "../../components/common/Page";
 import Card from "../../components/common/Card";
 import Table from "../../components/common/Table";
 import Button from "../../components/common/Button";
+import LectureHeader from "../../components/common/LectureHeader";
+import CircleProgress from "../../components/common/CircleProgress";
+import StatBox from "../../components/common/StatBox";
 import AddStudentModal from "../../components/teacher/AddStudentModal";
 
 interface Student {
@@ -77,67 +80,27 @@ export default function LectureDetail() {
     <Page>
       <div className="space-y-6">
         <Card>
-          <div className="flex gap-6">
-            <div className="w-32 h-40 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-              <img
-                src={mockLecture.thumbnail}
-                alt={mockLecture.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {mockLecture.name}
-              </h1>
-              <p className="text-sm text-gray-600 mb-1">
-                난이도 : {mockLecture.level}
-              </p>
-              <p className="text-sm text-gray-500">{mockLecture.description}</p>
-            </div>
-          </div>
+          <LectureHeader
+            name={mockLecture.name}
+            level={mockLecture.level}
+            description={mockLecture.description}
+            thumbnail={mockLecture.thumbnail}
+          />
         </Card>
 
         <Card title="강의 진행 현황">
           <div className="grid grid-cols-3 gap-4">
-            <div className="border border-gray-200 rounded-lg p-4 flex items-center gap-4">
-              <span className="text-sm text-gray-700">강의 진행률</span>
-              <div className="relative w-12 h-12">
-                <svg className="w-12 h-12 transform -rotate-90">
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    stroke="#e5e7eb"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    stroke="#374151"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray={`${(mockLecture.progress / 100) * 125.6} 125.6`}
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                  {mockLecture.progress}%
-                </span>
-              </div>
-            </div>
+            <StatBox label="강의 진행률">
+              <CircleProgress value={mockLecture.progress} />
+            </StatBox>
 
-            <div className="border border-gray-200 rounded-lg p-4 flex items-center gap-4">
-              <span className="text-sm text-gray-700">과제 제출</span>
+            <StatBox label="과제 제출">
               <span className="text-lg font-semibold text-gray-900">
                 {mockLecture.assignmentSubmitted} / {mockLecture.assignmentTotal}
               </span>
-            </div>
+            </StatBox>
 
-            <div className="border border-gray-200 rounded-lg p-4"></div>
+            <StatBox label="" className="invisible" />
           </div>
         </Card>
 
