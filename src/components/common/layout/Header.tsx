@@ -36,6 +36,7 @@ const menuByRole = {
 type Role = keyof typeof menuByRole;
 
 function getRoleFromPath(pathname: string): Role {
+  if (pathname.startsWith("/principal")) return "PRINCIPAL";
   if (pathname.startsWith("/teacher")) return "TEACHER";
   if (pathname.startsWith("/admin")) return "ADMIN";
   return "STUDENT";
