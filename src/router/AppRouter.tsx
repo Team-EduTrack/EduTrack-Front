@@ -8,6 +8,8 @@ import LectureDetail from "../pages/teacher/LectureDetail";
 import ExamManagement from "../pages/teacher/ExamManagement";
 import GradeManagement from "../pages/teacher/GradeManagement";
 import GradeDetail from "../pages/teacher/GradeDetail";
+import StudentDetail from "../pages/teacher/StudentDetail";
+import AssignmentGrading from "../pages/teacher/AssignmentGrading";
 import UserManagement from "../pages/admin/UserManagement";
 import Layout from "../components/common/layout/Layout";
 
@@ -25,6 +27,8 @@ export default function AppRouter() {
         <Route path="/teacher/exams" element={<ExamManagement />} />
         <Route path="/teacher/grades" element={<GradeManagement />} />
         <Route path="/teacher/grades/:lectureId" element={<GradeDetail />} />
+        <Route path="/teacher/students/:studentId" element={<StudentDetail />} />
+        <Route path="/teacher/assignments/:assignmentId" element={<AssignmentGrading />} />
       </Route>
 
       <Route path="/admin/users" element={<UserManagement />} />
