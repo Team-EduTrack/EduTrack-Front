@@ -24,6 +24,13 @@ const menuByRole = {
       { label: "계정 관리", path: "/admin/users" },
     ],
   },
+  PRINCIPAL: {
+    home: "/principal/dashboard",
+    menus: [
+      { label: "강의 관리", path: "/principal/lectures" },
+      { label: "회원 관리", path: "/principal/users" },
+    ],
+  },
 };
 
 type Role = keyof typeof menuByRole;
