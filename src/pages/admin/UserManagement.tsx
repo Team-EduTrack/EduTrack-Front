@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import CreateModal from "../../components/admin/CreateModal";
 import SuccessModal from "../../components/admin/SuccessModal";
 import Table from "../../components/common/Table";
-import Header from "../../components/common/Header";
+import Card from "../../components/common/Card";
+import Page from "../../components/common/Page";
 import Button from "../../components/common/Button";
 
 interface User {
@@ -58,40 +59,37 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header menus={[{ label: "사용자 관리", path: "/admin/users" }]} />
-      <main className="max-w-7xl mx-auto px-6 py-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">사용자 관리</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>원장 계정 생성</Button>
-          </div>
-          <div className="flex gap-3 mb-6">
-            <select className="select select-bordered w-48 bg-white" value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-              <option disabled>회원을 선택하세요</option>
-              <option>원장</option>
-              <option>선생님</option>
-              <option>학생</option>
-            </select>
-            <input type="text" placeholder="아이디 검색" className="input input-bordered flex-1 bg-white" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-            <Button variant="neutral" onClick={handleSearch}>검색</Button>
-          </div>
-          <Table
-            columns={[
-              { header: "NO", accessor: (user) => filteredUsers.indexOf(user) + 1 },
-              { header: "이름", accessor: "name" },
-              { header: "직책", accessor: "role" },
-              { header: "아이디", accessor: "userId" },
-              { header: "학원 코드", accessor: "code" },
-            ]}
-            data={filteredUsers}
-            keyExtractor={(user) => user.id}
-            emptyMessage="검색 결과가 없습니다."
-          />
+    <Page maxWidth="xl">
+      <Card>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">사용자 관리</h2>
+          <Button onClick={() => setIsCreateModalOpen(true)}>원장 계정 생성</Button>
         </div>
-      </main>
+        <div className="flex gap-3 mb-6">
+          <select className="select select-bordered w-48 bg-white" value={searchType} onChange={(e) => setSearchType(e.target.value)}>
+            <option disabled>회원을 선택하세요</option>
+            <option>원장</option>
+            <option>선생님</option>
+            <option>학생</option>
+          </select>
+          <input type="text" placeholder="아이디 검색" className="input input-bordered flex-1 bg-white" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          <Button variant="neutral" onClick={handleSearch}>검색</Button>
+        </div>
+        <Table
+          columns={[
+            { header: "NO", accessor: (user) => filteredUsers.indexOf(user) + 1 },
+            { header: "이름", accessor: "name" },
+            { header: "직책", accessor: "role" },
+            { header: "아이디", accessor: "userId" },
+            { header: "학원 코드", accessor: "code" },
+          ]}
+          data={filteredUsers}
+          keyExtractor={(user) => user.id}
+          emptyMessage="검색 결과가 없습니다."
+        />
+      </Card>
       <CreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSuccess={handleDirectorCreated} existingUsers={users} />
       <SuccessModal isOpen={isSuccessModalOpen} onClose={() => setIsSuccessModalOpen(false)} generatedCode={generatedCode} />
-    </div>
+    </Page>
   );
 }
