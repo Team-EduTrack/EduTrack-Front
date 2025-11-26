@@ -4,6 +4,7 @@ import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
 import Table from "../../components/common/Table";
 import FormInput from "../../components/common/Input";
+import MakeLectureModal from "../../components/common/principal/MakeLectureModal";
 
 const mockLectures = [
   {
@@ -30,10 +31,10 @@ const mockLectures = [
 ];
 
 export default function PrincipalLectureManagement() {
-  const [addLectureModalOpen, setAddLectureModalOpen] = useState(false);
+  const [makeLectureModalOpen, setMakeLectureModalOpen] = useState(false);
   const [lectures, setLectures] = useState(mockLectures);
 
-  const handleAddLecture = () => {};
+  const handleMakeLecture = () => {};
 
   const handleDeleteLecture = () => {};
 
@@ -49,7 +50,7 @@ export default function PrincipalLectureManagement() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setAddLectureModalOpen(true)}
+                onClick={() => setMakeLectureModalOpen(true)}
               >
                 추가
               </Button>
@@ -124,6 +125,13 @@ export default function PrincipalLectureManagement() {
           </div>
         </Card>
       </div>
+
+      <MakeLectureModal
+        isOpen={makeLectureModalOpen}
+        onClose={() => {
+          setMakeLectureModalOpen(false);
+        }}
+      />
     </Page>
   );
 }
