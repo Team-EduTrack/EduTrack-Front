@@ -13,16 +13,15 @@ import AssignmentGrading from "../pages/teacher/AssignmentGrading";
 
 import UserManagement from "../pages/admin/UserManagement";
 import Layout from "../components/common/layout/Layout";
-import PrincipalDashBoard from "../pages/principal/principalDashboard";
-import PrincipalLectureManagement from "../pages/principal/PrincipalLectureManagement";
 
+import PrincipalDashBoard from "../pages/principal/Dashboard";
+import LectureManagement from "../pages/principal/LectureManagement";
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-
 
       <Route element={<Layout />}>
         <Route path="/student/dashboard" element={<StudentDashboard />} />
@@ -44,19 +43,10 @@ export default function AppRouter() {
           element={<AssignmentGrading />}
         />
         <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />
-        <Route
-          path="/principal/lectures"
-          element={<PrincipalLectureManagement />}
-        />
-        
+        <Route path="/principal/lectures" element={<LectureManagement />} />
       </Route>
 
-
       <Route path="/admin/users" element={<UserManagement />} />
-
-      <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />
-      <Route path="/principal/users" element={<PrincipalUserManagement />} />
-      <Route path="/principal/lectures" element={<LectureManagement />} />
 
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="*" element={<h1>404 Not Found</h1>} />
