@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
-import StudentDashboard from "../pages/student/Dashboard";
+import StudentDashboard from "../pages/student/StudentDashboard";
 import TeacherDashboard from "../pages/teacher/Dashboard";
 import LectureManagement from "../pages/teacher/LectureManagement";
 import LectureDetail from "../pages/teacher/LectureDetail";
@@ -15,7 +15,7 @@ import UserManagement from "../pages/admin/UserManagement";
 import Layout from "../components/common/layout/Layout";
 
 import PrincipalDashBoard from "../pages/principal/Dashboard";
-import LectureManagement from "../pages/principal/LectureManagement";
+import PrincipalLectureManagement from "../pages/principal/LectureManagement";
 
 export default function AppRouter() {
   return (
@@ -43,7 +43,10 @@ export default function AppRouter() {
           element={<AssignmentGrading />}
         />
         <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />
-        <Route path="/principal/lectures" element={<LectureManagement />} />
+        <Route
+          path="/principal/lectures"
+          element={<PrincipalLectureManagement />}
+        />
       </Route>
 
       <Route path="/admin/users" element={<UserManagement />} />

@@ -11,7 +11,7 @@ const mockLectures = [
   { id: 3, name: "보카 독파", studentCount: 33 },
 ];
 
-export default function LectureManagement() {
+export default function PrincipalLectureManagement() {
   const [addLectureModalOpen, setAddLectureModalOpen] = useState(false);
   const [lectures, setLectures] = useState(mockLectures);
 
