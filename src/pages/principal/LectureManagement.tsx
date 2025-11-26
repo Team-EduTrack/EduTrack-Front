@@ -6,9 +6,27 @@ import Table from "../../components/common/Table";
 import FormInput from "../../components/common/Input";
 
 const mockLectures = [
-  { id: 1, name: "재미있는 영어", studentCount: 30 },
-  { id: 2, name: "영문법 수업", studentCount: 20 },
-  { id: 3, name: "보카 독파", studentCount: 33 },
+  {
+    id: 1,
+    name: "재미있는 영어",
+    teacher: "김예린",
+    studentCount: 30,
+    averageGrade: 63,
+  },
+  {
+    id: 2,
+    name: "영문법 수업",
+    teacher: "박우성",
+    studentCount: 20,
+    averageGrade: 98,
+  },
+  {
+    id: 3,
+    name: "보카 독파",
+    teacher: "김영아",
+    studentCount: 33,
+    averageGrade: 74,
+  },
 ];
 
 export default function PrincipalLectureManagement() {
@@ -62,8 +80,18 @@ export default function PrincipalLectureManagement() {
                 className: "text-center",
               },
               {
+                header: "담당 강사",
+                accessor: (lecture) => lecture.teacher,
+                className: "text-center",
+              },
+              {
                 header: "수강생",
                 accessor: (lecture) => lecture.studentCount,
+                className: " text-center",
+              },
+              {
+                header: "평균 성적",
+                accessor: (lecture) => lecture.averageGrade,
                 className: " text-center",
               },
             ]}
