@@ -12,9 +12,10 @@ import StudentDetail from "../pages/teacher/StudentDetail";
 import AssignmentGrading from "../pages/teacher/AssignmentGrading";
 
 import UserManagement from "../pages/admin/UserManagement";
+import Layout from "../components/common/layout/Layout";
 import PrincipalDashBoard from "../pages/principal/principalDashboard";
-import PrincipalUserManagement from "../pages/principal/PrincipalUserManagement";
-import LectureManagement from "../pages/principal/LectureManagement";
+import PrincipalLectureManagement from "../pages/principal/PrincipalLectureManagement";
+
 
 export default function AppRouter() {
   return (
@@ -27,12 +28,27 @@ export default function AppRouter() {
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher/lectures" element={<LectureManagement />} />
-        <Route path="/teacher/lectures/:lectureId" element={<LectureDetail />} />
+        <Route
+          path="/teacher/lectures/:lectureId"
+          element={<LectureDetail />}
+        />
         <Route path="/teacher/exams" element={<ExamManagement />} />
         <Route path="/teacher/grades" element={<GradeManagement />} />
         <Route path="/teacher/grades/:lectureId" element={<GradeDetail />} />
-        <Route path="/teacher/students/:studentId" element={<StudentDetail />} />
-        <Route path="/teacher/assignments/:assignmentId" element={<AssignmentGrading />} />
+        <Route
+          path="/teacher/students/:studentId"
+          element={<StudentDetail />}
+        />
+        <Route
+          path="/teacher/assignments/:assignmentId"
+          element={<AssignmentGrading />}
+        />
+        <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />
+        <Route
+          path="/principal/lectures"
+          element={<PrincipalLectureManagement />}
+        />
+        
       </Route>
 
 

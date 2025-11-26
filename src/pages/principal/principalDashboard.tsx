@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PageHeader from "../../components/common/Header";
 import Table from "../../components/common/Table";
 
 export default function PrincipalDashBoard() {
@@ -30,13 +29,6 @@ export default function PrincipalDashBoard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        menus={[
-          { label: "회원 관리", path: "/principal/users" },
-          { label: "강의 관리", path: "/principal/lectures" },
-        ]}
-      />
-
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
