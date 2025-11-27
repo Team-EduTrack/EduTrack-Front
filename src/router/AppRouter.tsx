@@ -16,6 +16,7 @@ import Layout from "../components/common/layout/Layout";
 
 import PrincipalDashBoard from "../pages/principal/Dashboard";
 import PrincipalLectureManagement from "../pages/principal/LectureManagement";
+import PrincipalUserManagement from "../pages/principal/UserManagement";
 
 export default function AppRouter() {
   return (
@@ -47,6 +48,7 @@ export default function AppRouter() {
           path="/principal/lectures"
           element={<PrincipalLectureManagement />}
         />
+        <Route path="/principal/users" element={<PrincipalUserManagement />} />
       </Route>
 
       <Route path="/admin/users" element={<UserManagement />} />
