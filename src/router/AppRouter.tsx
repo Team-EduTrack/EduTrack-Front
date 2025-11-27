@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
-import StudentDashboard from "../pages/student/Dashboard";
+import StudentDashboard from "../pages/student/StudentDashboard";
 import TeacherDashboard from "../pages/teacher/Dashboard";
 import LectureManagement from "../pages/teacher/LectureManagement";
 import LectureDetail from "../pages/teacher/LectureDetail";
@@ -13,16 +13,15 @@ import AssignmentGrading from "../pages/teacher/AssignmentGrading";
 
 import UserManagement from "../pages/admin/UserManagement";
 import Layout from "../components/common/layout/Layout";
-import PrincipalDashBoard from "../pages/principal/principalDashboard";
-import PrincipalLectureManagement from "../pages/principal/PrincipalLectureManagement";
 
+import PrincipalDashBoard from "../pages/principal/Dashboard";
+import PrincipalLectureManagement from "../pages/principal/LectureManagement";
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-
 
       <Route element={<Layout />}>
         <Route path="/student/dashboard" element={<StudentDashboard />} />
@@ -48,15 +47,9 @@ export default function AppRouter() {
           path="/principal/lectures"
           element={<PrincipalLectureManagement />}
         />
-        
       </Route>
 
-
       <Route path="/admin/users" element={<UserManagement />} />
-
-      <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />
-      <Route path="/principal/users" element={<PrincipalUserManagement />} />
-      <Route path="/principal/lectures" element={<LectureManagement />} />
 
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="*" element={<h1>404 Not Found</h1>} />
