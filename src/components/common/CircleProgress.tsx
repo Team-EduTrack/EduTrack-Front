@@ -15,10 +15,7 @@ export default function CircleProgress({ value, size = "sm" }: Props) {
 
   return (
     <div className="relative" style={{ width: svg, height: svg }}>
-      <svg
-        className="transform -rotate-90"
-        style={{ width: svg, height: svg }}
-      >
+      <svg className="transform -rotate-90" style={{ width: svg, height: svg }}>
         <circle
           cx={cx}
           cy={cx}
