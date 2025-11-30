@@ -26,8 +26,8 @@ export default function LectureHeader({
         )}
       </div>
       <div className="flex-1">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{name}</h1>
-        <p className="text-sm text-gray-600 mb-1">난이도 : {level}</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">{name}</h1>
+        <p className="text-sm text-gray-600 mb-4">난이도 : {level}</p>
         <p className="text-sm text-gray-500">{description}</p>
       </div>
     </div>
