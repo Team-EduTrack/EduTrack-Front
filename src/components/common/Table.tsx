@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-interface Column<T> {
+export interface Column<T> {
   header: ReactNode;
   accessor: keyof T | ((row: T, index: number) => ReactNode);
   className?: string;
@@ -20,7 +20,9 @@ export default function Table<T>({
   emptyMessage = "데이터가 없습니다.",
 }: Props<T>) {
   const renderCell = (row: T, col: Column<T>, index: number) =>
-    typeof col.accessor === "function" ? col.accessor(row, index) : String(row[col.accessor]);
+    typeof col.accessor === "function"
+      ? col.accessor(row, index)
+      : String(row[col.accessor]);
 
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-lg">
@@ -30,7 +32,9 @@ export default function Table<T>({
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className={`${col.className || "text-center"} text-sm font-semibold text-gray-700 border-b border-gray-200`}
+                className={`${
+                  col.className || "text-center"
+                } text-sm font-semibold text-gray-700 border-b border-gray-200`}
               >
                 {col.header}
               </th>
@@ -40,7 +44,10 @@ export default function Table<T>({
         <tbody className="bg-white">
           {data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="text-center py-12 text-gray-500 text-sm">
+              <td
+                colSpan={columns.length}
+                className="text-center py-12 text-gray-500 text-sm"
+              >
                 {emptyMessage}
               </td>
             </tr>
@@ -53,7 +60,12 @@ export default function Table<T>({
                 }`}
               >
                 {columns.map((col, colIdx) => (
-                  <td key={colIdx} className={`${col.className || "text-center"} text-sm text-gray-900 py-4`}>
+                  <td
+                    key={colIdx}
+                    className={`${
+                      col.className || "text-center"
+                    } text-sm text-gray-900 py-4`}
+                  >
                     {renderCell(row, col, rowIdx)}
                   </td>
                 ))}
