@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 interface Props {
   name: string;
   thumbnail?: string;
   linkTo?: string;
+  children?: ReactNode;
   variant?: "default" | "small" | "compact";
 }
 
@@ -11,6 +13,7 @@ export default function LectureList({
   name,
   thumbnail,
   linkTo,
+  children,
   variant = "default",
 }: Props) {
   const styles = {
@@ -60,6 +63,8 @@ export default function LectureList({
       <span className={`${styles.name} font-medium text-gray-900 flex-1 ml-2`}>
         {name}
       </span>
+
+      {children && <div className="ml-2">{children}</div>}
     </div>
   );
 
