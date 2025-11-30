@@ -5,8 +5,9 @@ const menuByRole = {
   STUDENT: {
     home: "/student/dashboard",
     menus: [
-      { label: "출석 현황", path: "/student/attendance" },
-      { label: "강의 목록", path: "/student/classes" },
+      { label: "내 강의 조회", path: "/student/lectures" },
+      { label: "과제/시험 제출", path: "/student/tasks" },
+      { label: "성적 조회", path: "/student/grades" },
     ],
   },
   TEACHER: {
