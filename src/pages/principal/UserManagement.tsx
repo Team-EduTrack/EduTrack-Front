@@ -4,6 +4,7 @@ import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
 import ReusablePieChart from "../../components/common/PieChart";
 import Table from "../../components/common/Table";
+import UserModal from "../../components/common/principal/UserModal";
 
 const mockUsersNumber = {
   totalUsers: 57,
@@ -18,6 +19,8 @@ const mockUsers = [
     userType: "강사",
     userId: "adk123",
     phone: "01093489203",
+    email: "ask938@nd.com",
+    profileImage: null,
   },
   {
     id: 2,
@@ -25,6 +28,8 @@ const mockUsers = [
     userType: "학생",
     userId: "adk33",
     phone: "01093989203",
+    email: "aii998@nd.com",
+    profileImage: null,
   },
   {
     id: 3,
@@ -32,22 +37,62 @@ const mockUsers = [
     userType: "강사",
     userId: "adk5623",
     phone: "01093489298",
+    email: "nkk091@nd.com",
+    profileImage: null,
   },
 ];
 
 export default function PrincipalUserManagement() {
   const [userList, setUserList] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedType, setSelectedType] = useState<"" | "강사" | "학생">("");
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [users, setUsers] = useState(mockUsers);
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
 
   const handleSearch = () => {
     setUserList(true);
   };
 
+  const handleSelectUser = (userId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedUserIds((prev) => [...prev, userId]);
+    } else {
+      setSelectedUserIds((prev) => prev.filter((id) => id !== userId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUserIds(filteredUsers.map((u) => u.id));
+    } else {
+      setSelectedUserIds([]);
+    }
+  };
+
+  const handleDeleteUsers = () => {
+    if (selectedUserIds.length === 0)
+      return alert("삭제할 회원을 선택해주세요.");
+
+    if (!confirm("선택한 회원을 삭제하시겠습니까?")) return;
+
+    setUsers((prev) => prev.filter((u) => !selectedUserIds.includes(u.id)));
+    setSelectedUserIds([]); // 선택 초기화
+  };
+
+  const handleUpdateUserType = (updatedUser) => {
+    setUsers((prev) =>
+      prev.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+    );
+    setSelectedUser(null);
+    setIsModalOpen(false);
+  };
+
   let filteredUsers = [];
 
   if (userList) {
-    filteredUsers = mockUsers;
+    filteredUsers = users;
 
     if (selectedType) {
       filteredUsers = filteredUsers.filter(
@@ -127,22 +172,45 @@ export default function PrincipalUserManagement() {
       </Card>
       <Card>
         <div className="flex justify-end mb-4">
-          <Button>삭제</Button>
+          <Button onClick={handleDeleteUsers}>삭제</Button>
         </div>
         <Table
           columns={[
             {
               header: (
-                <input type="checkbox" className="checkbox checkbox-sm" />
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={
+                    filteredUsers.length > 0 &&
+                    selectedUserIds.length === filteredUsers.length
+                  }
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                />
               ),
-              accessor: () => (
-                <input type="checkbox" className="checkbox checkbox-sm" />
+              accessor: (user) => (
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={selectedUserIds.includes(user.id)}
+                  onChange={(e) => handleSelectUser(user.id, e.target.checked)}
+                />
               ),
               className: "w-12 text-center",
             },
             {
               header: "이름",
-              accessor: "name",
+              accessor: (user) => (
+                <button
+                  className="text-gray-700 hover:text-gray-900 hover:underline"
+                  onClick={() => {
+                    setIsModalOpen(true);
+                    setSelectedUser(user);
+                  }}
+                >
+                  {user.name}
+                </button>
+              ),
             },
             {
               header: "회원 유형",
@@ -161,6 +229,14 @@ export default function PrincipalUserManagement() {
           keyExtractor={(row) => row.id}
         ></Table>
       </Card>
+      {selectedUser && (
+        <UserModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          user={selectedUser}
+          onSave={handleUpdateUserType}
+        />
+      )}
     </Page>
   );
 }
