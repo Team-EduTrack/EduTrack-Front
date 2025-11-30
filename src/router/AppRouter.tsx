@@ -17,12 +17,12 @@ import Layout from "../components/common/layout/Layout";
 import PrincipalDashBoard from "../pages/principal/Dashboard";
 import PrincipalLectureManagement from "../pages/principal/LectureManagement";
 import PrincipalUserManagement from "../pages/principal/UserManagement";
-import LectureList from "../pages/student/LectureList";
 import StudentLectureDetail from "../pages/student/LectureDetail";
 import LectureTasks from "../pages/student/LectureTasks";
 import AssignmentSubmit from "../pages/student/AssignmentSubmit";
 import ExamTake from "../pages/student/ExamTake";
 import GradeReport from "../pages/student/GradeReport";
+import StudentLectureList from "../pages/student/LectureList";
 
 export default function AppRouter() {
   return (
@@ -32,7 +32,7 @@ export default function AppRouter() {
 
       <Route element={<Layout />}>
         <Route path="/student/dashboard" element={<StudentDashboard />} />
-        <Route path="/student/lectures" element={<LectureList />} />
+        <Route path="/student/lectures" element={<StudentLectureList />} />
         <Route
           path="/student/lectures/:lectureId"
           element={<StudentLectureDetail />}
