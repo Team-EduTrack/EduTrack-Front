@@ -1,6 +1,11 @@
+import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
 import PageTitle from "../../components/common/PageTitle";
 import TaskCard from "../../components/common/student/TaskCard";
+import type {
+  Assignment,
+  Exam,
+} from "../../components/common/student/TaskCard";
 
 const mockLectures = [
   { id: 1, title: "영문법 수업", teacher: "김은아" },
@@ -10,7 +15,7 @@ const mockLectures = [
   { id: 5, title: "내신 콘서트 영어 능률", teacher: "강은경" },
 ];
 
-const mockAssignmentsByLecture = {
+const mockAssignmentsByLecture: Record<number, Assignment[]> = {
   1: [
     { id: 1, title: "구문 분석 숙제", dueDate: "2025-03-01", status: "미제출" },
     {
@@ -46,7 +51,7 @@ const mockAssignmentsByLecture = {
   ],
 };
 
-const mockExamsByLecture = {
+const mockExamsByLecture: Record<number, Exam[]> = {
   1: [
     {
       id: 1,
@@ -120,15 +125,16 @@ export default function LectureTasks() {
     <Page>
       <div className="space-y-6">
         <PageTitle title="과제/시험 제출" />
-
-        {mockLectures.map((lecture) => (
-          <TaskCard
-            key={lecture.id}
-            lecture={lecture}
-            assignments={mockAssignmentsByLecture[lecture.id] ?? []}
-            exams={mockExamsByLecture[lecture.id] ?? []}
-          />
-        ))}
+        <Card className="space-y-4">
+          {mockLectures.map((lecture) => (
+            <TaskCard
+              key={lecture.id}
+              lecture={lecture}
+              assignments={mockAssignmentsByLecture[lecture.id] ?? []}
+              exams={mockExamsByLecture[lecture.id] ?? []}
+            />
+          ))}
+        </Card>
       </div>
     </Page>
   );

@@ -3,10 +3,7 @@ import Card from "../Card";
 import LectureList from "./LectureList";
 import Button from "../Button";
 import Table, { type Column } from "../Table";
-
-//////////////////////////////////////
-// 타입 정의
-//////////////////////////////////////
+import { useNavigate } from "react-router-dom";
 
 interface Lecture {
   id: number;
@@ -14,119 +11,20 @@ interface Lecture {
   teacher: string;
 }
 
-interface Assignment {
+export interface Assignment {
   id: number;
   title: string;
   dueDate: string;
   status: "미제출" | "제출완료";
 }
 
-interface Exam {
+export interface Exam {
   id: number;
   title: string;
   endDate: string;
   duration: number;
   status: "응시 가능" | "응시 완료" | "기간 만료";
 }
-
-//////////////////////////////////////
-// 컬럼 정의 (변경 없음)
-//////////////////////////////////////
-
-const assignmentColumns: Column<Assignment>[] = [
-  {
-    header: "번호",
-    accessor: (_: Assignment, idx: number) => idx + 1,
-    className: "w-20 text-center",
-  },
-  {
-    header: "과제명",
-    accessor: "title",
-    className: "text-left px-4",
-  },
-  {
-    header: "마감일",
-    accessor: (row) => row.dueDate,
-    className: "text-center",
-  },
-  {
-    header: "상태",
-    accessor: (row) => (
-      <span
-        className={
-          row.status === "제출완료"
-            ? "text-green-600 font-semibold"
-            : "text-red-700 font-semibold"
-        }
-      >
-        {row.status}
-      </span>
-    ),
-    className: "text-center",
-  },
-  {
-    header: "",
-    accessor: (row) => (
-      <Button size="sm" disabled={row.status === "제출완료"}>
-        {row.status === "제출완료" ? "제출완료" : "제출하기"}
-      </Button>
-    ),
-    className: "text-right pr-4",
-  },
-];
-
-const examColumns: Column<Exam>[] = [
-  {
-    header: "번호",
-    accessor: (_: Exam, idx: number) => idx + 1,
-    className: "w-20 text-center",
-  },
-  {
-    header: "시험명",
-    accessor: "title",
-    className: "text-left px-4",
-  },
-  {
-    header: "마감기간",
-    accessor: (row) => row.endDate,
-    className: "text-center",
-  },
-  {
-    header: "시험시간",
-    accessor: (row) => `${row.duration}분`,
-    className: "text-center",
-  },
-  {
-    header: "상태",
-    accessor: (row) => (
-      <span
-        className={
-          row.status === "응시 완료"
-            ? "text-green-600 font-semibold"
-            : row.status === "기간 만료"
-            ? "text-gray-400 font-semibold"
-            : "text-blue-600 font-semibold"
-        }
-      >
-        {row.status}
-      </span>
-    ),
-    className: "text-center",
-  },
-  {
-    header: "",
-    accessor: (row) => (
-      <Button size="sm" disabled={row.status !== "응시 가능"}>
-        응시하기
-      </Button>
-    ),
-    className: "text-right pr-4",
-  },
-];
-
-//////////////////////////////////////
-// ★★★ TaskCard — mock 없는 버전
-//////////////////////////////////////
 
 export default function TaskCard({
   lecture,
@@ -138,6 +36,106 @@ export default function TaskCard({
   exams: Exam[];
 }) {
   const [openType, setOpenType] = useState<"assignment" | "exam" | null>(null);
+  const navigate = useNavigate();
+
+  const assignmentColumns: Column<Assignment>[] = [
+    {
+      header: "번호",
+      accessor: (_: Assignment, idx: number) => idx + 1,
+      className: "w-20 text-center",
+    },
+    {
+      header: "과제명",
+      accessor: "title",
+      className: "text-left px-4",
+    },
+    {
+      header: "마감일",
+      accessor: (row) => row.dueDate,
+      className: "text-center",
+    },
+    {
+      header: "상태",
+      accessor: (row) => (
+        <span
+          className={
+            row.status === "제출완료"
+              ? "text-green-600 font-semibold"
+              : "text-red-700 font-semibold"
+          }
+        >
+          {row.status}
+        </span>
+      ),
+      className: "text-center",
+    },
+    {
+      header: "",
+      accessor: (row) => (
+        <Button
+          size="sm"
+          disabled={row.status === "제출완료"}
+          onClick={() => navigate(`/student/tasks/assignment/${row.id}`)}
+        >
+          {row.status === "제출완료" ? "제출완료" : "제출하기"}
+        </Button>
+      ),
+      className: "text-right pr-4",
+    },
+  ];
+
+  const examColumns: Column<Exam>[] = [
+    {
+      header: "번호",
+      accessor: (_: Exam, idx: number) => idx + 1,
+      className: "w-20 text-center",
+    },
+    {
+      header: "시험명",
+      accessor: "title",
+      className: "text-left px-4",
+    },
+    {
+      header: "마감기간",
+      accessor: (row) => row.endDate,
+      className: "text-center",
+    },
+    {
+      header: "시험시간",
+      accessor: (row) => `${row.duration}분`,
+      className: "text-center",
+    },
+    {
+      header: "상태",
+      accessor: (row) => (
+        <span
+          className={
+            row.status === "응시 완료"
+              ? "text-green-600 font-semibold"
+              : row.status === "기간 만료"
+              ? "text-gray-400 font-semibold"
+              : "text-blue-600 font-semibold"
+          }
+        >
+          {row.status}
+        </span>
+      ),
+      className: "text-center",
+    },
+    {
+      header: "",
+      accessor: (row) => (
+        <Button
+          size="sm"
+          disabled={row.status !== "응시 가능"}
+          onClick={() => navigate(`/student/tasks/exam/${row.id}`)}
+        >
+          응시하기
+        </Button>
+      ),
+      className: "text-right pr-4",
+    },
+  ];
 
   return (
     <Card>
