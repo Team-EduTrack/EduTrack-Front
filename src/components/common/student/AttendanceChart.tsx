@@ -23,7 +23,7 @@ export default function AttendanceCompareChart({ myRate, classRate }: Props) {
   ];
 
   return (
-    <div className="text-sm w-full h-83 bg-base-100 p-4 rounded-lg shadow flex flex-col items-center justify-center">
+    <div className="text-sm w-full h-83 bg-base-100 p-4 flex flex-col items-center justify-center">
       <ResponsiveContainer width="100%" height="80%">
         <BarChart data={data} margin={{ left: -20 }}>
           <XAxis dataKey="name" padding={{ left: -20, right: 0 }} />

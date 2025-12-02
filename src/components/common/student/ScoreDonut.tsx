@@ -13,7 +13,7 @@ export default function ScoreDonut({ score }: Props) {
   const COLORS = ["#34d399", "#e5e7eb"];
 
   return (
-    <div className="w-full h-[320px] bg-base-100  flex flex-col items-center justify-center">
+    <div className="w-full h-80 bg-base-100  flex flex-col items-center justify-center">
       <h3 className="text-sm font-semibold text-center mb-4">나의 성적</h3>
 
       <div className="w-[200px] h-[200px] relative">
