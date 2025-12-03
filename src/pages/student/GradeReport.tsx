@@ -6,6 +6,7 @@ import LectureList from "../../components/common/student/LectureList";
 import AttendanceCalendar from "../../components/common/student/AttendanceCalendar";
 import AttendanceCompareChart from "../../components/common/student/AttendanceChart";
 import ScoreDonut from "../../components/common/student/ScoreDonut";
+import { useParams } from "react-router-dom";
 
 interface Lecture {
   id: number;
@@ -57,8 +58,14 @@ const mockUnitScores = [20, 55, 50, 45, 70, 80, 30, 15];
 const mockMyScores = [10, 75, 50, 55, 70, 65];
 
 export default function GradeReport() {
-  const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
   const maxScore = 100;
+  const { lectureId } = useParams();
+  const [clickedLecture, setClickedLecture] = useState<Lecture | null>(null);
+
+  const selectedLecture =
+    clickedLecture ||
+    mockLectures.find((l) => l.id === Number(lectureId)) ||
+    null;
 
   return (
     <Page>
@@ -70,7 +77,7 @@ export default function GradeReport() {
               <LectureList
                 key={lecture.id}
                 name={lecture.name}
-                onClick={() => setSelectedLecture(lecture)}
+                onClick={() => setClickedLecture(lecture)}
                 variant="compact"
               >
                 <span className="text-xs mr-4">{lecture.teacher} 강사님</span>
@@ -79,7 +86,7 @@ export default function GradeReport() {
           </div>
         </Card>
 
-        <Card title="김민경 학생의 성적 리포트">
+        <Card title="김민경학생의 성적 리포트">
           {!selectedLecture && (
             <p className="text-gray-400">
               강의를 선택하면 성적 리포트가 표시됩니다.

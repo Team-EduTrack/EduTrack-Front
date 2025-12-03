@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import ViewMore from "../../components/ViewMore";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
@@ -6,11 +7,12 @@ import Page from "../../components/common/Page";
 import LectureList from "../../components/common/student/LectureList";
 
 export default function StudentDashboard() {
+  const navigate = useNavigate();
   const studentInfo = { name: "김민경" };
 
   const enrolledLectures = [
-    { id: 1, title: "재미있는 영어" },
-    { id: 2, title: "보카 독해" },
+    { id: 1, title: "영문법 특강" },
+    { id: 2, title: "재미있는 영어" },
   ];
 
   const tasks = {
@@ -90,7 +92,11 @@ export default function StudentDashboard() {
                 name={lecture.title}
                 variant="compact"
               >
-                <Button size="sm" className="mr-4">
+                <Button
+                  size="sm"
+                  className="mr-4"
+                  onClick={() => navigate(`/student/grades/${lecture.id}`)}
+                >
                   성적 조회하기
                 </Button>
               </LectureList>
