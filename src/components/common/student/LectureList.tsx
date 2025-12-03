@@ -6,6 +6,7 @@ interface Props {
   thumbnail?: string;
   linkTo?: string;
   children?: ReactNode;
+  onClick?: () => void;
   variant?: "default" | "small" | "compact";
 }
 
@@ -14,6 +15,7 @@ export default function LectureList({
   thumbnail,
   linkTo,
   children,
+  onClick,
   variant = "default",
 }: Props) {
   const styles = {
@@ -70,11 +72,17 @@ export default function LectureList({
 
   if (linkTo) {
     return (
-      <Link to={linkTo} className="block">
+      <Link to={linkTo} onClick={onClick} className="block cursor-pointer">
         {content}
       </Link>
     );
   }
+
+  return (
+    <div onClick={onClick} className="cursor-pointer">
+      {content}
+    </div>
+  );
 
   return content;
 }
