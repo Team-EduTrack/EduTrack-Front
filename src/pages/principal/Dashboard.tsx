@@ -1,35 +1,35 @@
-import { useState } from "react";
 import Table from "../../components/common/Table";
+import Page from "../../components/common/Page";
+import ViewMore from "../../components/ViewMore";
 
 export default function PrincipalDashBoard() {
-  // 추후 API로 교체
   const academyInfo = {
     academyName: "대성 학원",
     principalName: "김아무개",
     userId: "hayeon0513",
     academyCode: "EDU-1234",
   };
-  const [teachers, setTeachers] = useState([
+  const teachers = [
     { id: 1, name: "고지은", subject: "영어" },
     { id: 2, name: "김려리", subject: "국어" },
     { id: 3, name: "나윤서", subject: "사회" },
     { id: 4, name: "도한우", subject: "과학" },
     { id: 5, name: "라민지", subject: "수학" },
     { id: 6, name: "마서현", subject: "국어" },
-  ]);
+  ];
 
-  const [students, setStudents] = useState([
+  const students = [
     { id: 1, name: "박이안" },
     { id: 2, name: "배지안" },
     { id: 3, name: "서우진" },
     { id: 4, name: "손다혜" },
     { id: 5, name: "송예린" },
     { id: 6, name: "신아율" },
-  ]);
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <Page>
+      <div className="space-y-4">
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
             {/* 왼쪽 텍스트 영역 */}
@@ -72,9 +72,7 @@ export default function PrincipalDashBoard() {
               <h3 className="text-lg font-semibold text-gray-900">
                 강사 리스트
               </h3>
-              <button className="text-sm text-primary hover:underline">
-                더보기 &gt;
-              </button>
+              <ViewMore to="/principal/users" />
             </div>
 
             <Table
@@ -103,9 +101,7 @@ export default function PrincipalDashBoard() {
               <h3 className="text-lg font-semibold text-gray-900">
                 학생 리스트
               </h3>
-              <button className="text-sm text-primary hover:underline">
-                더보기 &gt;
-              </button>
+              <ViewMore to="/principal/users" />
             </div>
 
             <Table
@@ -123,7 +119,7 @@ export default function PrincipalDashBoard() {
             />
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </Page>
   );
 }
