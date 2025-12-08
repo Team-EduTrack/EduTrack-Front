@@ -6,7 +6,7 @@ module.exports = {
       target: "./src/api/generated/edutrack.ts",
       client: "react-query",
       httpClient: "axios",
-      baseUrl: "/api",
+      baseUrl: "",
     },
   },
 };
