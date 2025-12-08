@@ -2,6 +2,7 @@ import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
 import ListItem from "../../components/common/ListItem";
 import Stat from "../../components/common/Stat";
+import ViewMore from "../../components/ViewMore";
 
 const mockTeacher = { name: "홍길동" };
 
@@ -22,12 +23,18 @@ export default function TeacherDashboard() {
     <Page>
       <div className="space-y-8">
         <Card>
-          <h1 className="text-xl font-semibold text-gray-900">{mockTeacher.name} 강사님</h1>
+          <h1 className="text-xl font-semibold text-gray-900">
+            {mockTeacher.name} 강사님
+          </h1>
           <p className="text-sm text-gray-500 mt-1">환영합니다!</p>
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card title="내 강의 리스트" moreLink="/teacher/lectures">
+          <Card>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold text-lg">내 강의 리스트</h3>
+              <ViewMore to="/teacher/lectures" />
+            </div>
             <ul className="space-y-1">
               {mockLectures.map((lecture) => (
                 <ListItem key={lecture.id}>{lecture.name}</ListItem>

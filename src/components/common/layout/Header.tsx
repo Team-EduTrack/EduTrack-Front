@@ -20,10 +20,7 @@ const menuByRole = {
   },
   ADMIN: {
     home: "/admin/users",
-    menus: [
-      { label: "학원 관리", path: "/admin/academy" },
-      { label: "계정 관리", path: "/admin/users" },
-    ],
+    menus: [{ label: "사용자 관리", path: "/admin/users" }],
   },
   PRINCIPAL: {
     home: "/principal/dashboard",
