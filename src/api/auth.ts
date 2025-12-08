@@ -1,4 +1,5 @@
-import axiosInstance from "./axiosInstance";
+import axios from "axios";
+
 
 export interface LoginPayload {
   loginId: string;
@@ -10,9 +11,15 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
-//API 요청
 export const loginApi = (payload: LoginPayload) =>
-  axiosInstance.post<LoginResponse>("/users/signin", payload);
+  axios.post<LoginResponse>("/api/users/signin", payload);
 
 export const fetchMyInfo = () =>
-    axiosInstance.get("/users/me");
+  axios.get("/api/users/me");
+
+// export const loginApi = async (payload: LoginPayload) => {
+//   const res = await axios.post<LoginResponse>("/api/users/signin", payload);
+//   console.log("로그인 API 응답:", res);
+//   return res;
+// };
+
