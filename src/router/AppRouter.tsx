@@ -68,9 +68,11 @@ export default function AppRouter() {
           element={<PrincipalLectureManagement />}
         />
         <Route path="/principal/users" element={<PrincipalUserManagement />} />
+
+        <Route path="/admin/users" element={<UserManagement />} />
       </Route>
 
-      <Route path="/admin/users" element={<UserManagement />} />
+      {/* <Route path="/admin/users" element={<UserManagement />} /> */}
 
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="*" element={<h1>404 Not Found</h1>} />

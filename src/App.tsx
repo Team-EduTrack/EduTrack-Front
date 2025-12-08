@@ -1,4 +1,3 @@
-import React from "react";
 import { useRecoilValue } from "recoil";
 import { authState } from "./stores/authStore";
 import AppRouter from "./router/AppRouter";
