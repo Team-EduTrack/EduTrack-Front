@@ -7,7 +7,8 @@ export interface AuthUser {
   name: string | null;
   email: string | null;
   role: UserRole | null;
-
+  
+  //아카데미정보 백엔드 수정 필요
   academyId: number | null;
   academyName: string | null;
   academyCode: string | null;
