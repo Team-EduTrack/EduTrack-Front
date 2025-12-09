@@ -17,9 +17,15 @@ export const loginApi = (payload: LoginPayload) =>
 export const fetchMyInfo = () =>
   axios.get("/api/users/me");
 
-// export const loginApi = async (payload: LoginPayload) => {
-//   const res = await axios.post<LoginResponse>("/api/users/signin", payload);
-//   console.log("로그인 API 응답:", res);
-//   return res;
-// };
+//signup
+
+export const signupApi = (data: any) => {
+  return axios.post("/api/auth/signup", data);
+};
+
+export const sendEmailCode = (email: string) =>
+  axios.post("/api/auth/send-email-verification", { email });
+
+export const verifyEmailCode = (email: string, token: string) =>
+  axios.post("/api/auth/verify-email", { email, token });
 
