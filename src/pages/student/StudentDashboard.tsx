@@ -1,3 +1,5 @@
+import { useRecoilValue } from "recoil";
+import { authState } from "../../stores/authStore";
 import { useNavigate } from "react-router-dom";
 import ViewMore from "../../components/ViewMore";
 import Button from "../../components/common/Button";
@@ -5,10 +7,12 @@ import Card from "../../components/common/Card";
 import ListItem from "../../components/common/ListItem";
 import Page from "../../components/common/Page";
 import LectureList from "../../components/common/student/LectureList";
+import useMyLectures from "../../hooks/useMyLectures";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
-  const studentInfo = { name: "김민경" };
+  const auth = useRecoilValue(authState);
+  const { lectures, isLoading: isLecturesLoading } = useMyLectures();
 
   const enrolledLectures = [
     { id: 1, title: "영문법 특강" },
@@ -33,7 +37,7 @@ export default function StudentDashboard() {
       <div className="space-y-4">
         <Card className="flex justify-between p-8">
           <h2 className="font-extrabold text-3xl">
-            {studentInfo.name} <span className="font-bold text-2xl">학생</span>
+            {auth.user?.name} <span className="font-bold text-2xl">학생</span>
           </h2>
           <Button>출석하기</Button>
         </Card>
@@ -45,13 +49,23 @@ export default function StudentDashboard() {
               <ViewMore to="/student/lectures" />
             </div>
             <div className="space-y-4">
-              {enrolledLectures.slice(0, 2).map((lecture) => (
-                <LectureList
-                  key={lecture.id}
-                  name={lecture.title}
-                  variant="small"
-                />
-              ))}
+              {isLecturesLoading ? (
+                <p>불러오는 중…</p>
+              ) : !lectures || lectures.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  수강중인 강의가 없습니다.
+                </p>
+              ) : (
+                lectures
+                  .slice(0, 2)
+                  .map((lecture) => (
+                    <LectureList
+                      key={lecture.lectureId}
+                      name={lecture.lectureTitle ?? ""}
+                      variant="small"
+                    />
+                  ))
+              )}
             </div>
           </Card>
 
