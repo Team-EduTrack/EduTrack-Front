@@ -8,29 +8,15 @@ import ListItem from "../../components/common/ListItem";
 import Page from "../../components/common/Page";
 import LectureList from "../../components/common/student/LectureList";
 import useMyLectures from "../../hooks/useMyLectures";
+import useMyExams from "../../hooks/useMyExams";
+import useMyAssignments from "../../hooks/useMyAssignments";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const auth = useRecoilValue(authState);
   const { lectures, isLoading: isLecturesLoading } = useMyLectures();
-
-  const enrolledLectures = [
-    { id: 1, title: "영문법 특강" },
-    { id: 2, title: "재미있는 영어" },
-  ];
-
-  const tasks = {
-    exams: [
-      { id: 101, lectureTitle: "재미있는 영어", title: "1차 지필평가" },
-      { id: 102, lectureTitle: "재미있는 영어", title: "2차 지필평가" },
-      { id: 103, lectureTitle: "재미있는 영어", title: "3차 지필평가" },
-    ],
-    assignments: [
-      { id: 201, lectureTitle: "보카 독해", title: "독후감 쓰기" },
-      { id: 202, lectureTitle: "보카 독해", title: "단어 10번 쓰기" },
-      { id: 203, lectureTitle: "보카 독해", title: "원서 해석본 제출" },
-    ],
-  };
+  const { exams, isLoading: isExamsLoading } = useMyExams();
+  const { assignments, isLoading: isAssignmentsLoading } = useMyAssignments();
 
   return (
     <Page>
@@ -76,20 +62,40 @@ export default function StudentDashboard() {
                   <h3 className="font-semibold text-lg">시험</h3>
                   <ViewMore to="/student/tasks" />
                 </div>
-                <ul className="space-y-1">
-                  {tasks.exams.slice(0, 2).map((exam) => (
-                    <ListItem key={exam.id}>{exam.title}</ListItem>
-                  ))}
-                </ul>
+                {isExamsLoading ? (
+                  <p className="text-sm text-gray-500">불러오는 중…</p>
+                ) : exams.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    응시 가능한 시험이 없습니다.
+                  </p>
+                ) : (
+                  <ul className="space-y-1">
+                    {exams.slice(0, 2).map((exam) => (
+                      <ListItem key={exam.examId}>
+                        {exam.title ?? "시험 제목 없음"}
+                      </ListItem>
+                    ))}
+                  </ul>
+                )}
               </article>
 
               <article>
                 <h3 className="font-semibold text-lg">과제</h3>
-                <ul className="space-y-1">
-                  {tasks.assignments.slice(0, 2).map((assignment) => (
-                    <ListItem key={assignment.id}>{assignment.title}</ListItem>
-                  ))}
-                </ul>
+                {isAssignmentsLoading ? (
+                  <p className="text-sm text-gray-500">불러오는 중…</p>
+                ) : assignments.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    제출해야 할 과제가 없습니다.
+                  </p>
+                ) : (
+                  <ul className="space-y-1">
+                    {assignments.slice(0, 2).map((assignment) => (
+                      <ListItem key={assignment.assignmentId}>
+                        {assignment.title ?? "과제 제목 없음"}
+                      </ListItem>
+                    ))}
+                  </ul>
+                )}
               </article>
             </div>
           </Card>
@@ -100,21 +106,31 @@ export default function StudentDashboard() {
               <h3 className="font-semibold text-lg">성적 리포트</h3>
               <ViewMore to="/student/grades" />
             </div>
-            {enrolledLectures.slice(0, 2).map((lecture) => (
-              <LectureList
-                key={lecture.id}
-                name={lecture.title}
-                variant="compact"
-              >
-                <Button
-                  size="sm"
-                  className="mr-4"
-                  onClick={() => navigate(`/student/grades/${lecture.id}`)}
+            {isLecturesLoading ? (
+              <p className="text-sm text-gray-500">불러오는 중…</p>
+            ) : !lectures || lectures.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                조회 가능한 성적이 없습니다.
+              </p>
+            ) : (
+              lectures.slice(0, 2).map((lecture) => (
+                <LectureList
+                  key={lecture.lectureId}
+                  name={lecture.lectureTitle ?? ""}
+                  variant="compact"
                 >
-                  성적 조회하기
-                </Button>
-              </LectureList>
-            ))}
+                  <Button
+                    size="sm"
+                    className="mr-4"
+                    onClick={() =>
+                      navigate(`/student/grades/${lecture.lectureId}`)
+                    }
+                  >
+                    성적 조회하기
+                  </Button>
+                </LectureList>
+              ))
+            )}
           </div>
         </Card>
       </div>
