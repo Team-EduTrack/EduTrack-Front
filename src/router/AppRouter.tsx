@@ -67,6 +67,10 @@ export default function AppRouter() {
           path="/principal/lectures"
           element={<PrincipalLectureManagement />}
         />
+        <Route
+          path="/principal/lectures/:lectureId"
+          element={<GradeDetail />}
+        />
         <Route path="/principal/users" element={<PrincipalUserManagement />} />
 
         <Route path="/admin/users" element={<UserManagement />} />

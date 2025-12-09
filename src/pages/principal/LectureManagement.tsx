@@ -5,6 +5,7 @@ import Page from "../../components/common/Page";
 import Table from "../../components/common/Table";
 import FormInput from "../../components/common/Input";
 import MakeLectureModal from "../../components/common/principal/MakeLectureModal";
+import { Link } from "react-router-dom";
 
 const mockLectures = [
   {
@@ -135,7 +136,14 @@ export default function PrincipalLectureManagement() {
               },
               {
                 header: "강의명",
-                accessor: (lecture) => lecture.name,
+                accessor: (lecture) => (
+                  <Link
+                    to={`/principal/lectures/${lecture.id}`}
+                    className="hover:underline"
+                  >
+                    {lecture.name}
+                  </Link>
+                ),
                 className: "text-center",
               },
               {

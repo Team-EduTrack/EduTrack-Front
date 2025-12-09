@@ -1,25 +1,42 @@
 import { atom } from "recoil";
 
-interface AuthState {
+export type UserRole = "ADMIN" | "PRINCIPAL" | "TEACHER" | "STUDENT";
+
+export interface AuthUser {
+  id: number | null;
+  name: string | null;
+  email: string | null;
+  role: UserRole | null;
+  
+  //아카데미정보 백엔드 수정 필요
+  academyId: number | null;
+  academyName: string | null;
+  academyCode: string | null;
+}
+
+export interface AuthState {
   isLoggedIn: boolean;
-  token: string | null;
-  role: "ADMIN"|"PRINCIPAL" | "TEACHER" | "STUDENT" | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  user: AuthUser | null;
 }
 
 export const authState = atom<AuthState>({
   key: "authState",
   default: {
     isLoggedIn: false,
-    token: null,
-    role: null,
+    accessToken: null,
+    refreshToken: null,
+    user: null,
   },
+
   effects: [
     ({ setSelf, onSet }) => {
       const saved = localStorage.getItem("auth");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          setSelf(parsed); 
+          setSelf(parsed);
         } catch (e) {
           console.error("localStorage auth 파싱 오류:", e);
         }
@@ -33,5 +50,6 @@ export const authState = atom<AuthState>({
         }
       });
     },
-  ]
+  ],
 });
+
