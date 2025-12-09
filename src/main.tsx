@@ -3,6 +3,8 @@ import { RecoilRoot } from "recoil";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 
+import "./api/axiosConfig";
+
 import App from "./App";
 import "./index.css";
 
@@ -11,11 +13,11 @@ const queryClient = new QueryClient();
 async function initializeApp() {
   console.log("Mode:", import.meta.env.MODE);
 
-  if (import.meta.env.MODE === "development") {
-    const { worker } = await import("./mocks/browser");
-    await worker.start();
-    console.log("[MSW] Mock server started");
-  }
+  // if (import.meta.env.MODE === "development") {
+  //   const { worker } = await import("./mocks/browser");
+  //   await worker.start();
+  //   console.log("[MSW] Mock server started");
+  // }
 
   const rootElement = document.getElementById("root");
   if (!rootElement) {

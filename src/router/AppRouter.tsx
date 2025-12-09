@@ -72,8 +72,6 @@ export default function AppRouter() {
         <Route path="/admin/users" element={<UserManagement />} />
       </Route>
 
-      {/* <Route path="/admin/users" element={<UserManagement />} /> */}
-
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="*" element={<h1>404 Not Found</h1>} />
     </Routes>

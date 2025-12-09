@@ -13,27 +13,32 @@ export function useLogin() {
   return useMutation({
     mutationFn: loginApi, 
 
-    async onSuccess(data) {
+    async onSuccess(response) {
+      const { accessToken, refreshToken } = response.data;
+    
       // 토큰 저장
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+    
       // 사용자 정보 조회
-      const me = await fetchMyInfo(); 
-
+      const meResponse = await fetchMyInfo();
+      const me = meResponse.data;
+    
       // 상태 저장
       setAuth({
         isLoggedIn: true,
-        token: data.accessToken,
-        refreshToken: data.refreshToken,
-        role: me.data.role,
+        token: accessToken,
+        refreshToken,
+        role: me.role,
         user: me,
       });
-
-      if (me.data.role === "STUDENT") navigate("/student/dashboard");
-      if (me.data.role === "TEACHER") navigate("/teacher/dashboard");
-      if (me.data.role === "PRINCIPAL") navigate("/principal/dashboard");
-    },
+    
+      if (me.role === "STUDENT") navigate("/student/dashboard");
+      if (me.role === "TEACHER") navigate("/teacher/dashboard");
+      if (me.role === "PRINCIPAL") navigate("/principal/dashboard");
+      if (me.role === "ADMIN") navigate("/admin/users");
+    }
+    
   });  
     
 }

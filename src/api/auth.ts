@@ -1,4 +1,5 @@
-import axiosInstance from "./axiosInstance";
+import axios from "axios";
+
 
 export interface LoginPayload {
   loginId: string;
@@ -10,9 +11,21 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
-//API 요청
 export const loginApi = (payload: LoginPayload) =>
-  axiosInstance.post<LoginResponse>("/users/signin", payload);
+  axios.post<LoginResponse>("/api/users/signin", payload);
 
 export const fetchMyInfo = () =>
-    axiosInstance.get("/users/me");
+  axios.get("/api/users/me");
+
+//signup
+
+export const signupApi = (data: any) => {
+  return axios.post("/api/auth/signup", data);
+};
+
+export const sendEmailCode = (email: string) =>
+  axios.post("/api/auth/send-email-verification", { email });
+
+export const verifyEmailCode = (email: string, token: string) =>
+  axios.post("/api/auth/verify-email", { email, token });
+

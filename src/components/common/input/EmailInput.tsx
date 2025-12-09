@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axiosInstance from "../../../api/axiosInstance";
+import axios from "axios";
 
 interface EmailInputProps {
   value: string;
@@ -31,26 +31,26 @@ export default function EmailInput({
 
   const handleSendCode = async () => {
     try {
-      const res = await axiosInstance.post("/users/email/send", {
+      await axios.post("/api/auth/send-email-verification", {
         email: value,
       });
       setEmailSent(true);
     } catch (err: any) {
-      alert(err.response.data.message);
+      alert(err.response?.data?.message || "인증번호 발송 실패");
     }
   };
 
   const handleVerify = async () => {
     try {
-      const res = await axiosInstance.post("/users/email/confirm", {
+      await axios.post("/api/auth/verify-email", {
         email: value,
-        code: authCode,
+        token: authCode,
       });
 
       setIsAuthValid(true);
       onVerified();
     } catch (err: any) {
-      alert(err.response.data.message);
+      alert(err.response?.data?.message || "인증 실패");
     }
   };
   return (

@@ -5,7 +5,7 @@ import type { SignupForm, SignupErrors } from "../../types/signup";
 import PasswordInput from "../../components/common/input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import EmailInput from "../../components/common/input/EmailInput";
-import axiosInstance from "../../api/axiosInstance";
+import axios from "axios";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export default function Signup() {
     confirmPassword: "",
     email: "",
     phone: "",
-    academyCode: "EDU-1234",
+    academyCode: "",
     emailVerified: false,
   });
 
@@ -43,8 +43,8 @@ export default function Signup() {
     errors.password === "" &&
     errors.email === "" &&
     errors.phone === "" &&
-    errors.academyCode === "" &&
-    form.emailVerified === true; // 이메일 인증 완료
+    errors.academyCode === "";
+  //form.emailVerified === true; // 이메일 인증 완료
 
   const handleChange =
     (key: keyof SignupForm) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +64,7 @@ export default function Signup() {
 
   const handleSignup = async () => {
     try {
-      const res = await axiosInstance.post("/users/signup", {
+      const res = await axios.post("/api/auth/signup", {
         academyCode: form.academyCode,
         loginId: form.loginId,
         password: form.password,

@@ -27,7 +27,7 @@ import type {
 } from 'axios';
 
 export interface SignInRequest {
-  email: string;
+  loginId: string;
   password: string;
 }
 
@@ -490,7 +490,7 @@ export const signIn = (
     
     
     return axios.default.post(
-      `/api/api/users/signin`,
+      `/api/users/signin`,
       signInRequest,options
     );
   }
@@ -552,7 +552,7 @@ export const logout = (
     
     
     return axios.default.post(
-      `/api/api/users/logout`,undefined,options
+      `/api/users/logout`,undefined,options
     );
   }
 
@@ -613,7 +613,7 @@ export const getMyInfo = (
     
     
     return axios.default.get(
-      `/api/api/users/me`,options
+      `/api/users/me`,options
     );
   }
 
@@ -622,7 +622,7 @@ export const getMyInfo = (
 
 export const getGetMyInfoQueryKey = () => {
     return [
-    `/api/api/users/me`
+    `/api/users/me`
     ] as const;
     }
 
@@ -680,7 +680,7 @@ export const signup = (
     
     
     return axios.default.post(
-      `/api/api/auth/signup`,
+      `/api/auth/signup`,
       signupRequest,options
     );
   }
@@ -742,7 +742,7 @@ export const sendEmailVerification = (
     
     
     return axios.default.post(
-      `/api/api/auth/send-email-verification`,
+      `/api/auth/send-email-verification`,
       sendEmailVerificationRequest,{
     ...options,}
     );
@@ -805,7 +805,7 @@ export const verifyEmail = (
     
     
     return axios.default.post(
-      `/api/api/auth/verify-email`,
+      `/api/auth/verify-email`,
       verifyEmailRequest,{
     ...options,}
     );
@@ -869,7 +869,7 @@ export const searchUsers = (
     
     
     return axios.default.get(
-      `/api/api/academies/${academyId}/users/search`,{
+      `/api/academies/${academyId}/users/search`,{
     ...options,
         params: {...params, ...options?.params},}
     );
@@ -881,7 +881,7 @@ export const searchUsers = (
 export const getSearchUsersQueryKey = (academyId?: number,
     params?: SearchUsersParams,) => {
     return [
-    `/api/api/academies/${academyId}/users/search`, ...(params ? [params]: [])
+    `/api/academies/${academyId}/users/search`, ...(params ? [params]: [])
     ] as const;
     }
 
@@ -942,7 +942,7 @@ export const changeStudentToTeacher = (
     
     
     return axios.default.patch(
-      `/api/api/academies/${academyId}/users/${userId}/role/teacher`,undefined,{
+      `/api/academies/${academyId}/users/${userId}/role/teacher`,undefined,{
     ...options,}
     );
   }
@@ -1004,7 +1004,7 @@ export const principalSignup = (
     
     
     return axios.default.post(
-      `/api/api/academy/signup`,
+      `/api/academy/signup`,
       principalRegistrationRequest,options
     );
   }
@@ -1066,7 +1066,7 @@ export const createLecture = (
     
     
     return axios.default.post(
-      `/api/api/lectures`,
+      `/api/lectures`,
       lectureCreationRequest,options
     );
   }
@@ -1128,7 +1128,7 @@ export const getLecturesByTeacher = (
     
     
     return axios.default.get(
-      `/api/api/lectures`,options
+      `/api/lectures`,options
     );
   }
 
@@ -1137,7 +1137,7 @@ export const getLecturesByTeacher = (
 
 export const getGetLecturesByTeacherQueryKey = () => {
     return [
-    `/api/api/lectures`
+    `/api/lectures`
     ] as const;
     }
 
@@ -1195,7 +1195,7 @@ export const getLectureDetailForTeacher = (
     
     
     return axios.default.get(
-      `/api/api/lectures/${lectureId}`,options
+      `/api/lectures/${lectureId}`,options
     );
   }
 
@@ -1204,7 +1204,7 @@ export const getLectureDetailForTeacher = (
 
 export const getGetLectureDetailForTeacherQueryKey = (lectureId?: number,) => {
     return [
-    `/api/api/lectures/${lectureId}`
+    `/api/lectures/${lectureId}`
     ] as const;
     }
 
@@ -1262,7 +1262,7 @@ export const getStudentsByLecture = (
     
     
     return axios.default.get(
-      `/api/api/lectures/${lectureId}/students`,options
+      `/api/lectures/${lectureId}/students`,options
     );
   }
 
@@ -1271,7 +1271,7 @@ export const getStudentsByLecture = (
 
 export const getGetStudentsByLectureQueryKey = (lectureId?: number,) => {
     return [
-    `/api/api/lectures/${lectureId}/students`
+    `/api/lectures/${lectureId}/students`
     ] as const;
     }
 
@@ -1330,7 +1330,7 @@ export const assignStudentsToLecture = (
     
     
     return axios.default.post(
-      `/api/api/lectures/${lectureId}/students`,
+      `/api/lectures/${lectureId}/students`,
       lectureStudentAssignRequest,options
     );
   }
@@ -1393,7 +1393,7 @@ export const getAvailableStudentsForLecture = (
     
     
     return axios.default.get(
-      `/api/api/lectures/${lectureId}/available-students`,{
+      `/api/lectures/${lectureId}/available-students`,{
     ...options,
         params: {...params, ...options?.params},}
     );
@@ -1405,7 +1405,7 @@ export const getAvailableStudentsForLecture = (
 export const getGetAvailableStudentsForLectureQueryKey = (lectureId?: number,
     params?: GetAvailableStudentsForLectureParams,) => {
     return [
-    `/api/api/lectures/${lectureId}/available-students`, ...(params ? [params]: [])
+    `/api/lectures/${lectureId}/available-students`, ...(params ? [params]: [])
     ] as const;
     }
 
@@ -1466,7 +1466,7 @@ export const createAssignment = (
     
     
     return axios.default.post(
-      `/api/api/academies/${academyId}/assignments`,
+      `/api/academies/${academyId}/assignments`,
       assignmentCreateRequest,options
     );
   }
@@ -1529,7 +1529,7 @@ export const getAssignmentsForLecture = (
     
     
     return axios.default.get(
-      `/api/api/academies/${academyId}/assignments/lectures/${lectureId}`,options
+      `/api/academies/${academyId}/assignments/lectures/${lectureId}`,options
     );
   }
 
@@ -1539,7 +1539,7 @@ export const getAssignmentsForLecture = (
 export const getGetAssignmentsForLectureQueryKey = (academyId?: number,
     lectureId?: number,) => {
     return [
-    `/api/api/academies/${academyId}/assignments/lectures/${lectureId}`
+    `/api/academies/${academyId}/assignments/lectures/${lectureId}`
     ] as const;
     }
 
@@ -1600,7 +1600,7 @@ export const getMySubmission = (
     
     
     return axios.default.get(
-      `/api/api/academies/${academyId}/assignments/${assignmentId}/my-submission`,options
+      `/api/academies/${academyId}/assignments/${assignmentId}/my-submission`,options
     );
   }
 
@@ -1610,7 +1610,7 @@ export const getMySubmission = (
 export const getGetMySubmissionQueryKey = (academyId?: number,
     assignmentId?: number,) => {
     return [
-    `/api/api/academies/${academyId}/assignments/${assignmentId}/my-submission`
+    `/api/academies/${academyId}/assignments/${assignmentId}/my-submission`
     ] as const;
     }
 
@@ -1671,7 +1671,7 @@ export const getAssignmentPresignedUrl = (
     
     
     return axios.default.post(
-      `/api/api/assignments/${assignmentId}/presigned-url`,
+      `/api/assignments/${assignmentId}/presigned-url`,
       presignedUrlRequest,options
     );
   }
@@ -1735,7 +1735,7 @@ export const submitAssignment = (
     
     
     return axios.default.post(
-      `/api/api/assignments/${assignmentId}/submit`,
+      `/api/assignments/${assignmentId}/submit`,
       assignmentSubmitRequest,{
     ...options,
         params: {...params, ...options?.params},}
@@ -1800,7 +1800,7 @@ export const getSubmissions = (
     
     
     return axios.default.get(
-      `/api/api/academies/${academyId}/assignments/${assignmentId}/submissions`,options
+      `/api/academies/${academyId}/assignments/${assignmentId}/submissions`,options
     );
   }
 
@@ -1810,7 +1810,7 @@ export const getSubmissions = (
 export const getGetSubmissionsQueryKey = (academyId?: number,
     assignmentId?: number,) => {
     return [
-    `/api/api/academies/${academyId}/assignments/${assignmentId}/submissions`
+    `/api/academies/${academyId}/assignments/${assignmentId}/submissions`
     ] as const;
     }
 
@@ -1872,7 +1872,7 @@ export const getSubmissionForTeacher = (
     
     
     return axios.default.get(
-      `/api/api/academies/${academyId}/assignments/${assignmentId}/submissions/${submissionId}`,options
+      `/api/academies/${academyId}/assignments/${assignmentId}/submissions/${submissionId}`,options
     );
   }
 
@@ -1883,7 +1883,7 @@ export const getGetSubmissionForTeacherQueryKey = (academyId?: number,
     assignmentId?: number,
     submissionId?: number,) => {
     return [
-    `/api/api/academies/${academyId}/assignments/${assignmentId}/submissions/${submissionId}`
+    `/api/academies/${academyId}/assignments/${assignmentId}/submissions/${submissionId}`
     ] as const;
     }
 
@@ -1948,7 +1948,7 @@ export const gradeSubmission = (
     
     
     return axios.default.patch(
-      `/api/api/academies/${academyId}/assignments/${assignmentId}/submissions/${submissionId}/grade`,
+      `/api/academies/${academyId}/assignments/${assignmentId}/submissions/${submissionId}/grade`,
       assignmentGradeRequest,options
     );
   }
@@ -2011,7 +2011,7 @@ export const createExam = (
     
     
     return axios.default.post(
-      `/api/api/lectures/${lectureId}/exams`,
+      `/api/lectures/${lectureId}/exams`,
       examCreationRequest,options
     );
   }
@@ -2075,7 +2075,7 @@ export const registerExamQuestions = (
     
     
     return axios.default.post(
-      `/api/api/lectures/${lectureId}/exams/${examId}/mcq`,
+      `/api/lectures/${lectureId}/exams/${examId}/mcq`,
       questionRegistrationRequest,options
     );
   }
@@ -2138,7 +2138,7 @@ export const getExamDetail = (
     
     
     return axios.default.get(
-      `/api/api/lectures/${lectureId}/exams/${examId}`,options
+      `/api/lectures/${lectureId}/exams/${examId}`,options
     );
   }
 
@@ -2148,7 +2148,7 @@ export const getExamDetail = (
 export const getGetExamDetailQueryKey = (lectureId?: number,
     examId?: number,) => {
     return [
-    `/api/api/lectures/${lectureId}/exams/${examId}`
+    `/api/lectures/${lectureId}/exams/${examId}`
     ] as const;
     }
 
@@ -2208,7 +2208,7 @@ export const startExam = (
     
     
     return axios.default.post(
-      `/api/api/student/exams/${examId}/start`,undefined,options
+      `/api/student/exams/${examId}/start`,undefined,options
     );
   }
 
@@ -2270,7 +2270,7 @@ export const saveAnswers = (
     
     
     return axios.default.post(
-      `/api/api/student/exams/${examId}/answers`,
+      `/api/student/exams/${examId}/answers`,
       answerSaveRequest,options
     );
   }
@@ -2332,7 +2332,7 @@ export const submitExam = (
     
     
     return axios.default.post(
-      `/api/api/student/exams/${examId}/submit`,undefined,options
+      `/api/student/exams/${examId}/submit`,undefined,options
     );
   }
 
@@ -2393,7 +2393,7 @@ export const getExamResult = (
     
     
     return axios.default.get(
-      `/api/api/student/exams/${examId}/result`,options
+      `/api/student/exams/${examId}/result`,options
     );
   }
 
@@ -2402,7 +2402,7 @@ export const getExamResult = (
 
 export const getGetExamResultQueryKey = (examId?: number,) => {
     return [
-    `/api/api/student/exams/${examId}/result`
+    `/api/student/exams/${examId}/result`
     ] as const;
     }
 
@@ -2460,7 +2460,7 @@ export const getExamRecords = (
     
     
     return axios.default.get(
-      `/api/api/student/exams/records`,options
+      `/api/student/exams/records`,options
     );
   }
 
@@ -2469,7 +2469,7 @@ export const getExamRecords = (
 
 export const getGetExamRecordsQueryKey = () => {
     return [
-    `/api/api/student/exams/records`
+    `/api/student/exams/records`
     ] as const;
     }
 
@@ -2527,7 +2527,7 @@ export const getMyLectures = (
     
     
     return axios.default.get(
-      `/api/api/students/${studentId}/lectures`,options
+      `/api/students/${studentId}/lectures`,options
     );
   }
 
@@ -2536,7 +2536,7 @@ export const getMyLectures = (
 
 export const getGetMyLecturesQueryKey = (studentId?: number,) => {
     return [
-    `/api/api/students/${studentId}/lectures`
+    `/api/students/${studentId}/lectures`
     ] as const;
     }
 
@@ -2594,7 +2594,7 @@ export const checkIn = (
     
     
     return axios.default.post(
-      `/api/api/students/${studentId}/attendance/check-in`,undefined,options
+      `/api/students/${studentId}/attendance/check-in`,undefined,options
     );
   }
 
@@ -2655,7 +2655,7 @@ export const getMyAssignments = (
     
     
     return axios.default.get(
-      `/api/api/students/${studentId}/assignments`,options
+      `/api/students/${studentId}/assignments`,options
     );
   }
 
@@ -2664,7 +2664,7 @@ export const getMyAssignments = (
 
 export const getGetMyAssignmentsQueryKey = (studentId?: number,) => {
     return [
-    `/api/api/students/${studentId}/assignments`
+    `/api/students/${studentId}/assignments`
     ] as const;
     }
 
@@ -2722,7 +2722,7 @@ export const getMyExams = (
     
     
     return axios.default.get(
-      `/api/api/students/${studentId}/exams`,options
+      `/api/students/${studentId}/exams`,options
     );
   }
 
@@ -2731,7 +2731,7 @@ export const getMyExams = (
 
 export const getGetMyExamsQueryKey = (studentId?: number,) => {
     return [
-    `/api/api/students/${studentId}/exams`
+    `/api/students/${studentId}/exams`
     ] as const;
     }
 
