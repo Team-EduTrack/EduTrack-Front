@@ -2,7 +2,7 @@ import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
 import PageTitle from "../../components/common/PageTitle";
 import LectureList from "../../components/common/student/LectureList";
-import useMyLectures from "../../hooks/useMyLectures";
+import useMyLectures from "../../hooks/student/useMyLectures";
 
 export default function StudentLectureList() {
   const { lectures, isLoading } = useMyLectures();

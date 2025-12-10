@@ -7,9 +7,9 @@ import Card from "../../components/common/Card";
 import ListItem from "../../components/common/ListItem";
 import Page from "../../components/common/Page";
 import LectureList from "../../components/common/student/LectureList";
-import useMyLectures from "../../hooks/useMyLectures";
-import useMyExams from "../../hooks/useMyExams";
-import useMyAssignments from "../../hooks/useMyAssignments";
+import useMyLectures from "../../hooks/student/useMyLectures";
+import useMyExams from "../../hooks/student/useMyExams";
+import useMyAssignments from "../../hooks/student/useMyAssignments";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();

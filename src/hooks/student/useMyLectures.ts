@@ -1,6 +1,6 @@
 import { useRecoilValue } from "recoil";
-import { authState } from "../stores/authStore";
-import { useGetMyLectures } from "../api/generated/edutrack";
+import { authState } from "../../stores/authStore";
+import { useGetMyLectures } from "../../api/generated/edutrack";
 
 export default function useMyLectures() {
     const auth = useRecoilValue(authState);
