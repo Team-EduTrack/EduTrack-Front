@@ -4,6 +4,8 @@ import LectureList from "./LectureList";
 import Button from "../Button";
 import Table, { type Column } from "../Table";
 import { useNavigate } from "react-router-dom";
+import useLectureAssignments from "../../../hooks/student/useLectureAssignment";
+import { mapAssignment } from "../../../utils/mappers/assignmentMapper";
 
 interface Lecture {
   id: number;
@@ -28,15 +30,19 @@ export interface Exam {
 
 export default function TaskCard({
   lecture,
-  assignments,
+  //assignments,
   exams,
 }: {
   lecture: Lecture;
-  assignments: Assignment[];
+  //assignments: Assignment[];
   exams: Exam[];
 }) {
   const [openType, setOpenType] = useState<"assignment" | "exam" | null>(null);
   const navigate = useNavigate();
+  const { assignments: rawAssignments, isLoading: isAssignmentsLoading } =
+    useLectureAssignments(lecture.id);
+
+  const assignments = rawAssignments.map(mapAssignment);
 
   const assignmentColumns: Column<Assignment>[] = [
     {
@@ -169,12 +175,16 @@ export default function TaskCard({
       {/* ▼ 과제 */}
       {openType === "assignment" && (
         <div className="mt-4">
-          <Table
-            columns={assignmentColumns}
-            data={assignments}
-            keyExtractor={(row) => row.id}
-            emptyMessage="등록된 과제가 없습니다."
-          />
+          {isAssignmentsLoading ? (
+            <p className="text-sm text-gray-500">과제를 불러오는 중…</p>
+          ) : (
+            <Table
+              columns={assignmentColumns}
+              data={assignments}
+              keyExtractor={(row) => row.id}
+              emptyMessage="등록된 과제가 없습니다."
+            />
+          )}
         </div>
       )}
 
