@@ -2,16 +2,19 @@ import { atom } from "recoil";
 
 export type UserRole = "ADMIN" | "PRINCIPAL" | "TEACHER" | "STUDENT";
 
+export interface AcademyInfo {
+  id: number;
+  name: string;
+  code: string;
+}
+
 export interface AuthUser {
   id: number | null;
   name: string | null;
   email: string | null;
   role: UserRole | null;
   
-  //아카데미정보 백엔드 수정 필요
-  academyId: number | null;
-  academyName: string | null;
-  academyCode: string | null;
+  academy: AcademyInfo | null;
 }
 
 export interface AuthState {
