@@ -34,7 +34,12 @@ export interface SignInRequest {
 export interface SignInResponse {
   accessToken?: string;
   refreshToken?: string;
-  userId?: number;
+  user?: UserInfo;
+}
+
+export interface UserInfo {
+  id?: number;
+  name?: string;
   role?: string;
 }
 
@@ -42,16 +47,17 @@ export interface MyInfoResponse {
   id?: number;
   name?: string;
   email?: string;
+  phone?: string;
   role?: string;
 }
 
 export interface SignupRequest {
-  loginId?: string;
-  password?: string;
-  name?: string;
-  phone?: string;
-  email?: string;
-  academyCode?: string;
+  loginId: string;
+  password: string;
+  name: string;
+  phone: string;
+  email: string;
+  academyCode: string;
 }
 
 export interface SignupResponse {
@@ -79,15 +85,19 @@ export interface UserSearchResultResponse {
 }
 
 export interface PrincipalRegistrationRequest {
-  academyName: string;
   principalName: string;
-  email: string;
+  loginId: string;
   password: string;
+  passwordConfirm: string;
+  phone: string;
+  email: string;
+  academyName: string;
 }
 
 export interface PrincipalRegistrationResponse {
-  academyId?: number;
-  principalId?: number;
+  id?: number;
+  academyName?: string;
+  academyCode?: string;
 }
 
 export type LectureCreationRequestDate = typeof LectureCreationRequestDate[keyof typeof LectureCreationRequestDate];
@@ -418,6 +428,28 @@ export interface ExamRecordResponse {
   examEndDate?: string;
 }
 
+export interface QuestionCorrectRateResponse {
+  questionId?: number;
+  questionContent?: string;
+  totalCount?: number;
+  correctCount?: number;
+  correctRate?: number;
+}
+
+export interface StudentQuestionStatisticsResponse {
+  questionId?: number;
+  questionContent?: string;
+  correctAnswer?: number;
+  /** @nullable */
+  submittedAnswer?: number | null;
+  isCorrect?: boolean;
+  earnedScore?: number;
+  maxScore?: number;
+  totalCount?: number;
+  correctCount?: number;
+  correctRate?: number;
+}
+
 export interface MyLectureResponse {
   lectureId?: number;
   lectureTitle?: string;
@@ -676,12 +708,13 @@ export function useGetMyInfo<TData = Awaited<ReturnType<typeof getMyInfo>>, TErr
  */
 export const signup = (
     signupRequest: SignupRequest, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<SignupResponse>> => {
+ ): Promise<AxiosResponse<string>> => {
     
     
     return axios.default.post(
       `/api/auth/signup`,
-      signupRequest,options
+      signupRequest,{
+    ...options,}
     );
   }
 
@@ -859,6 +892,269 @@ export const useVerifyEmail = <TError = AxiosError<unknown>,
       return useMutation(mutationOptions);
     }
     
+/**
+ * @summary 최종 회원가입 완료
+ */
+export const completeSignup = (
+    verifyEmailRequest: VerifyEmailRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<SignupResponse>> => {
+    
+    
+    return axios.default.post(
+      `/api/auth/signup/complete`,
+      verifyEmailRequest,options
+    );
+  }
+
+
+
+export const getCompleteSignupMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: VerifyEmailRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: VerifyEmailRequest}, TContext> => {
+
+const mutationKey = ['completeSignup'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeSignup>>, {data: VerifyEmailRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  completeSignup(data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteSignupMutationResult = NonNullable<Awaited<ReturnType<typeof completeSignup>>>
+    export type CompleteSignupMutationBody = VerifyEmailRequest
+    export type CompleteSignupMutationError = AxiosError<unknown>
+
+    /**
+ * @summary 최종 회원가입 완료
+ */
+export const useCompleteSignup = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: VerifyEmailRequest}, TContext>, axios?: AxiosRequestConfig}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeSignup>>,
+        TError,
+        {data: VerifyEmailRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getCompleteSignupMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 학생 개인 + 특정 시험 문항별 정답률 조회
+ */
+export const getStudentQuestionStatistics = (
+    examId: number, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<StudentQuestionStatisticsResponse[]>> => {
+    
+    
+    return axios.default.get(
+      `/api/student/statistics/exams/${examId}/questions`,options
+    );
+  }
+
+
+
+
+export const getGetStudentQuestionStatisticsQueryKey = (examId?: number,) => {
+    return [
+    `/api/student/statistics/exams/${examId}/questions`
+    ] as const;
+    }
+
+    
+export const getGetStudentQuestionStatisticsQueryOptions = <TData = Awaited<ReturnType<typeof getStudentQuestionStatistics>>, TError = AxiosError<unknown>>(examId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStudentQuestionStatistics>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudentQuestionStatisticsQueryKey(examId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudentQuestionStatistics>>> = ({ signal }) => getStudentQuestionStatistics(examId, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(examId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudentQuestionStatistics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStudentQuestionStatisticsQueryResult = NonNullable<Awaited<ReturnType<typeof getStudentQuestionStatistics>>>
+export type GetStudentQuestionStatisticsQueryError = AxiosError<unknown>
+
+
+/**
+ * @summary 학생 개인 + 특정 시험 문항별 정답률 조회
+ */
+
+export function useGetStudentQuestionStatistics<TData = Awaited<ReturnType<typeof getStudentQuestionStatistics>>, TError = AxiosError<unknown>>(
+ examId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStudentQuestionStatistics>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStudentQuestionStatisticsQueryOptions(examId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary 강사용: 특정 시험 문항별 정답률
+ */
+export const getExamQuestionCorrectRates = (
+    examId: number, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<QuestionCorrectRateResponse[]>> => {
+    
+    
+    return axios.default.get(
+      `/api/statistics/exams/${examId}/questions`,options
+    );
+  }
+
+
+
+
+export const getGetExamQuestionCorrectRatesQueryKey = (examId?: number,) => {
+    return [
+    `/api/statistics/exams/${examId}/questions`
+    ] as const;
+    }
+
+    
+export const getGetExamQuestionCorrectRatesQueryOptions = <TData = Awaited<ReturnType<typeof getExamQuestionCorrectRates>>, TError = AxiosError<unknown>>(examId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExamQuestionCorrectRates>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetExamQuestionCorrectRatesQueryKey(examId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getExamQuestionCorrectRates>>> = ({ signal }) => getExamQuestionCorrectRates(examId, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(examId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getExamQuestionCorrectRates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetExamQuestionCorrectRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getExamQuestionCorrectRates>>>
+export type GetExamQuestionCorrectRatesQueryError = AxiosError<unknown>
+
+
+/**
+ * @summary 강사용: 특정 시험 문항별 정답률
+ */
+
+export function useGetExamQuestionCorrectRates<TData = Awaited<ReturnType<typeof getExamQuestionCorrectRates>>, TError = AxiosError<unknown>>(
+ examId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExamQuestionCorrectRates>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetExamQuestionCorrectRatesQueryOptions(examId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary 강사용: 강의 전체 문항별 정답률
+ */
+export const getLectureQuestionCorrectRates = (
+    lectureId: number, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<QuestionCorrectRateResponse[]>> => {
+    
+    
+    return axios.default.get(
+      `/api/statistics/lectures/${lectureId}/questions`,options
+    );
+  }
+
+
+
+
+export const getGetLectureQuestionCorrectRatesQueryKey = (lectureId?: number,) => {
+    return [
+    `/api/statistics/lectures/${lectureId}/questions`
+    ] as const;
+    }
+
+    
+export const getGetLectureQuestionCorrectRatesQueryOptions = <TData = Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>, TError = AxiosError<unknown>>(lectureId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLectureQuestionCorrectRatesQueryKey(lectureId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>> = ({ signal }) => getLectureQuestionCorrectRates(lectureId, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(lectureId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLectureQuestionCorrectRatesQueryResult = NonNullable<Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>>
+export type GetLectureQuestionCorrectRatesQueryError = AxiosError<unknown>
+
+
+/**
+ * @summary 강사용: 강의 전체 문항별 정답률
+ */
+
+export function useGetLectureQuestionCorrectRates<TData = Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>, TError = AxiosError<unknown>>(
+ lectureId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLectureQuestionCorrectRates>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLectureQuestionCorrectRatesQueryOptions(lectureId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
 /**
  * @summary 사용자 검색
  */
