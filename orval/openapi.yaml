@@ -33,14 +33,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignInRequest'
+              $ref: "#/components/schemas/SignInRequest"
       responses:
-        '200':
+        "200":
           description: 로그인 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SignInResponse'
+                $ref: "#/components/schemas/SignInResponse"
 
   /api/users/logout:
     post:
@@ -50,7 +50,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '204':
+        "204":
           description: 로그아웃 성공 (내용 없음)
 
   /api/users/me:
@@ -61,12 +61,12 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 내 정보
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MyInfoResponse'
+                $ref: "#/components/schemas/MyInfoResponse"
 
   ########################
   # AuthController (/api/auth)
@@ -81,14 +81,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignupRequest'
+              $ref: "#/components/schemas/SignupRequest"
       responses:
-        '200':
-          description: 회원가입 성공
+        "200":
+          description: 가입 신청이 완료되었습니다. 이메일 인증을 해주세요.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SignupResponse'
+                type: string
 
   /api/auth/send-email-verification:
     post:
@@ -100,9 +100,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SendEmailVerificationRequest'
+              $ref: "#/components/schemas/SendEmailVerificationRequest"
       responses:
-        '200':
+        "200":
           description: 인증 코드 발송 성공
           content:
             application/json:
@@ -119,14 +119,108 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VerifyEmailRequest'
+              $ref: "#/components/schemas/VerifyEmailRequest"
       responses:
-        '200':
-          description: 이메일 인증 완료
+        "200":
+          description: 이메일 인증이 완료되었습니다. 진행중이던 회원가입을 완료하세요.
           content:
             application/json:
               schema:
                 type: string
+
+  /api/auth/signup/complete:
+    post:
+      tags: [Auth]
+      summary: 최종 회원가입 완료
+      operationId: completeSignup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyEmailRequest"
+      responses:
+        "200":
+          description: 회원가입 완료
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+
+  ########################
+  # QuestionStatisticsController
+  ########################
+  /api/student/statistics/exams/{examId}/questions:
+    get:
+      tags: [Student Exams]
+      summary: 학생 개인 + 특정 시험 문항별 정답률 조회
+      operationId: getStudentQuestionStatistics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 학생 개인 문항별 정답률
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentQuestionStatisticsResponse"
+
+  /api/statistics/exams/{examId}/questions:
+    get:
+      tags: [Exams]
+      summary: "강사용: 특정 시험 문항별 정답률"
+      operationId: getExamQuestionCorrectRates
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 시험 문항별 정답률
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionCorrectRateResponse"
+
+  /api/statistics/lectures/{lectureId}/questions:
+    get:
+      tags: [Lectures]
+      summary: "강사용: 강의 전체 문항별 정답률"
+      operationId: getLectureQuestionCorrectRates
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: lectureId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 강의 전체 문항별 정답률
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionCorrectRateResponse"
 
   ########################
   # UserSearchController (/api/academies/{academyId}/users)
@@ -157,14 +251,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: 사용자 검색 결과
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserSearchResultResponse'
+                  $ref: "#/components/schemas/UserSearchResultResponse"
 
   /api/academies/{academyId}/users/{userId}/role/teacher:
     patch:
@@ -187,7 +281,7 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 역할 변경 완료
           content:
             application/json:
@@ -207,14 +301,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PrincipalRegistrationRequest'
+              $ref: "#/components/schemas/PrincipalRegistrationRequest"
       responses:
-        '201':
+        "201":
           description: 학원/원장 등록 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PrincipalRegistrationResponse'
+                $ref: "#/components/schemas/PrincipalRegistrationResponse"
 
   ########################
   # LectureController (/api/lectures)
@@ -231,14 +325,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LectureCreationRequest'
+              $ref: "#/components/schemas/LectureCreationRequest"
       responses:
-        '201':
+        "201":
           description: 강의 생성 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LectureCreationResponse'
+                $ref: "#/components/schemas/LectureCreationResponse"
 
     get:
       tags: [Lectures]
@@ -247,14 +341,14 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 강의 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/LectureForTeacherResponse'
+                  $ref: "#/components/schemas/LectureForTeacherResponse"
 
   /api/lectures/{lectureId}:
     get:
@@ -271,12 +365,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 강의 상세 정보 (통계 포함)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LectureDetailWithStatisticsResponse'
+                $ref: "#/components/schemas/LectureDetailWithStatisticsResponse"
 
   /api/lectures/{lectureId}/students:
     get:
@@ -293,14 +387,14 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 학생 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StudentSearchResponse'
+                  $ref: "#/components/schemas/StudentSearchResponse"
 
     post:
       tags: [Lectures]
@@ -320,14 +414,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LectureStudentAssignRequest'
+              $ref: "#/components/schemas/LectureStudentAssignRequest"
       responses:
-        '200':
+        "200":
           description: 강의에 학생 배정 결과
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LectureStudentAssignResponse'
+                $ref: "#/components/schemas/LectureStudentAssignResponse"
 
   /api/lectures/{lectureId}/available-students:
     get:
@@ -349,14 +443,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: 배정 가능 학생 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StudentSearchResponse'
+                  $ref: "#/components/schemas/StudentSearchResponse"
 
   ########################
   # AssignmentController (/api/academies/{academyId}/assignments)
@@ -380,14 +474,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssignmentCreateRequest'
+              $ref: "#/components/schemas/AssignmentCreateRequest"
       responses:
-        '201':
+        "201":
           description: 과제 생성 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentCreateResponse'
+                $ref: "#/components/schemas/AssignmentCreateResponse"
 
   /api/academies/{academyId}/assignments/lectures/{lectureId}:
     get:
@@ -410,14 +504,14 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 과제 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssignmentListResponse'
+                  $ref: "#/components/schemas/AssignmentListResponse"
 
   /api/academies/{academyId}/assignments/{assignmentId}/my-submission:
     get:
@@ -440,12 +534,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 과제 제출 상세 정보
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentSubmissionStudentViewResponse'
+                $ref: "#/components/schemas/AssignmentSubmissionStudentViewResponse"
 
   ########################
   # AssignmentSubmissionController (/api/academies/{academyId}/assignments/{assignmentId}/submissions)
@@ -475,14 +569,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PresignedUrlRequest'
+              $ref: "#/components/schemas/PresignedUrlRequest"
       responses:
-        '200':
+        "200":
           description: Presigned URL 응답
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PresignedUrlResponse'
+                $ref: "#/components/schemas/PresignedUrlResponse"
 
   /api/academies/{academyId}/assignments/{assignmentId}/submissions/submit:
     post:
@@ -515,14 +609,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssignmentSubmitRequest'
+              $ref: "#/components/schemas/AssignmentSubmitRequest"
       responses:
-        '200':
+        "200":
           description: 과제 제출 결과
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentSubmitResponse'
+                $ref: "#/components/schemas/AssignmentSubmitResponse"
 
   /api/academies/{academyId}/assignments/{assignmentId}/submissions:
     get:
@@ -545,14 +639,14 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 과제 제출 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssignmentSubmissionListResponse'
+                  $ref: "#/components/schemas/AssignmentSubmissionListResponse"
 
   /api/academies/{academyId}/assignments/{assignmentId}/submissions/{submissionId}:
     get:
@@ -581,12 +675,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 과제 제출 상세 정보
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentSubmissionTeacherViewResponse'
+                $ref: "#/components/schemas/AssignmentSubmissionTeacherViewResponse"
 
   /api/academies/{academyId}/assignments/{assignmentId}/submissions/{submissionId}/grade:
     patch:
@@ -619,14 +713,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssignmentGradeRequest'
+              $ref: "#/components/schemas/AssignmentGradeRequest"
       responses:
-        '200':
+        "200":
           description: 채점 완료
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentGradeResponse'
+                $ref: "#/components/schemas/AssignmentGradeResponse"
 
   ########################
   # AssignmentSubmissionController (기존 경로 - 하위 호환성 유지)
@@ -650,14 +744,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PresignedUrlRequest'
+              $ref: "#/components/schemas/PresignedUrlRequest"
       responses:
-        '200':
+        "200":
           description: Presigned URL 응답
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PresignedUrlResponse'
+                $ref: "#/components/schemas/PresignedUrlResponse"
 
   /api/assignments/{assignmentId}/submit:
     post:
@@ -684,14 +778,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssignmentSubmitRequest'
+              $ref: "#/components/schemas/AssignmentSubmitRequest"
       responses:
-        '200':
+        "200":
           description: 과제 제출 결과
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentSubmitResponse'
+                $ref: "#/components/schemas/AssignmentSubmitResponse"
 
   ########################
   # ExamController (/api/lectures/{lectureId}/exams)
@@ -715,14 +809,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExamCreationRequest'
+              $ref: "#/components/schemas/ExamCreationRequest"
       responses:
-        '201':
+        "201":
           description: 시험 생성 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExamCreationResponse'
+                $ref: "#/components/schemas/ExamCreationResponse"
 
   /api/lectures/{lectureId}/exams/{examId}/mcq:
     post:
@@ -751,16 +845,16 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/QuestionRegistrationRequest'
+                $ref: "#/components/schemas/QuestionRegistrationRequest"
       responses:
-        '200':
+        "200":
           description: 등록된 문제 ID 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QuestionIdResponse'
+                  $ref: "#/components/schemas/QuestionIdResponse"
 
   /api/lectures/{lectureId}/exams/{examId}:
     get:
@@ -783,12 +877,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 시험 상세 정보
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExamDetailResponse'
+                $ref: "#/components/schemas/ExamDetailResponse"
 
   ########################
   # StudentExamController (/api/student/exams)
@@ -808,12 +902,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 시험 시작 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExamStartResponse'
+                $ref: "#/components/schemas/ExamStartResponse"
 
   /api/student/exams/{examId}/answers:
     post:
@@ -834,14 +928,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AnswerSaveRequest'
+              $ref: "#/components/schemas/AnswerSaveRequest"
       responses:
-        '200':
+        "200":
           description: 답안 저장 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnswerSaveResponse'
+                $ref: "#/components/schemas/AnswerSaveResponse"
 
   /api/student/exams/{examId}/submit:
     post:
@@ -858,12 +952,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 시험 제출 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExamSubmitResponse'
+                $ref: "#/components/schemas/ExamSubmitResponse"
 
   /api/student/exams/{examId}/result:
     get:
@@ -880,12 +974,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 시험 결과
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExamResultResponse'
+                $ref: "#/components/schemas/ExamResultResponse"
 
   /api/student/exams/records:
     get:
@@ -895,14 +989,14 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 시험 기록 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ExamRecordResponse'
+                  $ref: "#/components/schemas/ExamRecordResponse"
 
   ########################
   # StudentDashboardController (/api/students)
@@ -920,14 +1014,14 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 내 강의 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MyLectureResponse'
+                  $ref: "#/components/schemas/MyLectureResponse"
 
   /api/students/{studentId}/attendance/check-in:
     post:
@@ -942,12 +1036,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 출석 체크 결과
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AttendanceCheckInResponse'
+                $ref: "#/components/schemas/AttendanceCheckInResponse"
 
   /api/students/{studentId}/assignments:
     get:
@@ -962,14 +1056,14 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 내 과제 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssignmentSummaryResponse'
+                  $ref: "#/components/schemas/AssignmentSummaryResponse"
 
   /api/students/{studentId}/exams:
     get:
@@ -984,14 +1078,14 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        "200":
           description: 내 시험 목록
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ExamSummaryResponse'
+                  $ref: "#/components/schemas/ExamSummaryResponse"
 
 components:
   securitySchemes:
@@ -1020,9 +1114,17 @@ components:
           type: string
         refreshToken:
           type: string
-        userId:
+        user:
+          $ref: "#/components/schemas/UserInfo"
+
+    UserInfo:
+      type: object
+      properties:
+        id:
           type: integer
           format: int64
+        name:
+          type: string
         role:
           type: string
 
@@ -1035,6 +1137,8 @@ components:
         name:
           type: string
         email:
+          type: string
+        phone:
           type: string
         role:
           type: string
@@ -1054,6 +1158,7 @@ components:
           type: string
         academyCode:
           type: string
+      required: [loginId, password, name, phone, email, academyCode]
 
     SignupResponse:
       type: object
@@ -1105,25 +1210,41 @@ components:
     PrincipalRegistrationRequest:
       type: object
       properties:
-        academyName:
-          type: string
         principalName:
           type: string
-        email:
+        loginId:
           type: string
         password:
           type: string
-      required: [academyName, principalName, email, password]
+        passwordConfirm:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        academyName:
+          type: string
+      required:
+        [
+          principalName,
+          loginId,
+          password,
+          passwordConfirm,
+          phone,
+          email,
+          academyName,
+        ]
 
     PrincipalRegistrationResponse:
       type: object
       properties:
-        academyId:
+        id:
           type: integer
           format: int64
-        principalId:
-          type: integer
-          format: int64
+        academyName:
+          type: string
+        academyCode:
+          type: string
 
     ########################
     # Lectures
@@ -1168,7 +1289,7 @@ components:
     LectureDetailForTeacherResponse:
       type: object
       allOf:
-        - $ref: '#/components/schemas/LectureForTeacherResponse'
+        - $ref: "#/components/schemas/LectureForTeacherResponse"
         - type: object
           properties:
             description:
@@ -1176,7 +1297,7 @@ components:
             studentDetails:
               type: array
               items:
-                $ref: '#/components/schemas/StudentInfo'
+                $ref: "#/components/schemas/StudentInfo"
 
     StudentInfo:
       type: object
@@ -1191,9 +1312,9 @@ components:
       type: object
       properties:
         lectureDetailForTeacherResponse:
-          $ref: '#/components/schemas/LectureDetailForTeacherResponse'
+          $ref: "#/components/schemas/LectureDetailForTeacherResponse"
         lectureStatisticsResponse:
-          $ref: '#/components/schemas/LectureStatisticsResponse'
+          $ref: "#/components/schemas/LectureStatisticsResponse"
 
     LectureStatisticsResponse:
       type: object
@@ -1510,7 +1631,7 @@ components:
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionDetail'
+            $ref: "#/components/schemas/QuestionDetail"
 
     QuestionDetail:
       type: object
@@ -1534,7 +1655,7 @@ components:
         choices:
           type: array
           items:
-            $ref: '#/components/schemas/ChoiceDetail'
+            $ref: "#/components/schemas/ChoiceDetail"
 
     ChoiceDetail:
       type: object
@@ -1585,7 +1706,7 @@ components:
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionForStudent'
+            $ref: "#/components/schemas/QuestionForStudent"
 
     QuestionForStudent:
       type: object
@@ -1603,7 +1724,7 @@ components:
         choices:
           type: array
           items:
-            $ref: '#/components/schemas/ChoiceForStudent'
+            $ref: "#/components/schemas/ChoiceForStudent"
 
     ChoiceForStudent:
       type: object
@@ -1623,7 +1744,7 @@ components:
         answers:
           type: array
           items:
-            $ref: '#/components/schemas/AnswerSubmitRequest'
+            $ref: "#/components/schemas/AnswerSubmitRequest"
       required: [answers]
 
     AnswerSubmitRequest:
@@ -1704,7 +1825,7 @@ components:
         questionResults:
           type: array
           items:
-            $ref: '#/components/schemas/QuestionResult'
+            $ref: "#/components/schemas/QuestionResult"
 
     QuestionResult:
       type: object
@@ -1764,6 +1885,60 @@ components:
         examEndDate:
           type: string
           format: date-time
+
+    ########################
+    # Statistics
+    ########################
+    QuestionCorrectRateResponse:
+      type: object
+      properties:
+        questionId:
+          type: integer
+          format: int64
+        questionContent:
+          type: string
+        totalCount:
+          type: integer
+          format: int64
+        correctCount:
+          type: integer
+          format: int64
+        correctRate:
+          type: number
+          format: double
+
+    StudentQuestionStatisticsResponse:
+      type: object
+      properties:
+        questionId:
+          type: integer
+          format: int64
+        questionContent:
+          type: string
+        correctAnswer:
+          type: integer
+          format: int32
+        submittedAnswer:
+          type: integer
+          format: int32
+          nullable: true
+        isCorrect:
+          type: boolean
+        earnedScore:
+          type: integer
+          format: int32
+        maxScore:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int64
+        correctCount:
+          type: integer
+          format: int64
+        correctRate:
+          type: number
+          format: double
 
     ########################
     # Student Dashboard
