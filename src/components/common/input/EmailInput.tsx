@@ -5,6 +5,7 @@ interface EmailInputProps {
   value: string;
   onChange: (email: string) => void;
   onVerified: () => void;
+  onSendVerification: () => Promise<void>;
   error?: string;
 }
 
@@ -12,6 +13,7 @@ export default function EmailInput({
   value,
   onChange,
   onVerified,
+  onSendVerification,
   error,
 }: EmailInputProps) {
   const [isEmailValid, setIsEmailValid] = useState(false);
@@ -31,18 +33,19 @@ export default function EmailInput({
 
   const handleSendCode = async () => {
     try {
-      await axios.post("/api/auth/send-email-verification", {
-        email: value,
-      });
+      await onSendVerification();
       setEmailSent(true);
-    } catch (err: any) {
-      alert(err.response?.data?.message || "인증번호 발송 실패");
-    }
+    } catch (err) {}
   };
 
   const handleVerify = async () => {
     try {
       await axios.post("/api/auth/verify-email", {
+        email: value,
+        token: authCode,
+      });
+
+      await axios.post("/api/auth/signup/complete", {
         email: value,
         token: authCode,
       });
