@@ -43,8 +43,8 @@ export default function Signup() {
     errors.password === "" &&
     errors.email === "" &&
     errors.phone === "" &&
-    errors.academyCode === "";
-  //form.emailVerified === true; // 이메일 인증 완료
+    errors.academyCode === "" &&
+    form.emailVerified === true; // 이메일 인증 완료
 
   const handleChange =
     (key: keyof SignupForm) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +61,28 @@ export default function Signup() {
         [key]: validateField(key, value, { ...form, [key]: value }),
       }));
     };
+
+  const handleSendEmailVerification = async () => {
+    try {
+      await axios.post("/api/auth/signup", {
+        academyCode: form.academyCode,
+        loginId: form.loginId,
+        password: form.password,
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+      });
+
+      await axios.post("/api/auth/send-email-verification", {
+        email: form.email,
+      });
+
+      alert("이메일 인증번호를 발송했습니다.");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "이메일 인증 요청 실패");
+      throw err;
+    }
+  };
 
   const handleSignup = async () => {
     try {
@@ -131,12 +153,6 @@ export default function Signup() {
             required
             maxLength={11}
           />
-          <EmailInput
-            value={form.email}
-            onChange={(email) => setForm({ ...form, email })}
-            error={errors.email}
-            onVerified={() => setForm({ ...form, emailVerified: true })}
-          />
           <BaseInput
             label="학원코드"
             placeholder="학원코드를 입력해주세요"
@@ -145,6 +161,14 @@ export default function Signup() {
             error={errors.academyCode}
             required={true}
           />
+          <EmailInput
+            value={form.email}
+            onChange={(email) => setForm({ ...form, email })}
+            error={errors.email}
+            onVerified={() => setForm({ ...form, emailVerified: true })}
+            onSendVerification={handleSendEmailVerification}
+          />
+
           <button
             className="btn btn-primary w-full mt-4"
             disabled={!isFormValid}
