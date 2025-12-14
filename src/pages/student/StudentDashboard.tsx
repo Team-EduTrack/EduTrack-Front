@@ -10,6 +10,7 @@ import LectureList from "../../components/common/student/LectureList";
 import useMyLectures from "../../hooks/student/useMyLectures";
 import useMyExams from "../../hooks/student/useMyExams";
 import useMyAssignments from "../../hooks/student/useMyAssignments";
+import useStudentCheckIn from "../../hooks/student/useStudentCheckIn";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function StudentDashboard() {
   const { lectures, isLoading: isLecturesLoading } = useMyLectures();
   const { exams, isLoading: isExamsLoading } = useMyExams();
   const { assignments, isLoading: isAssignmentsLoading } = useMyAssignments();
+  const { checkIn, isLoading, checkedIn } = useStudentCheckIn();
 
   return (
     <Page>
@@ -25,7 +27,13 @@ export default function StudentDashboard() {
           <h2 className="font-extrabold text-3xl">
             {auth.user?.name} <span className="font-bold text-2xl">학생</span>
           </h2>
-          <Button>출석하기</Button>
+          <Button
+            onClick={checkIn}
+            disabled={isLoading || checkedIn}
+            variant={checkedIn ? "secondary" : "primary"}
+          >
+            {checkedIn ? "출석 완료" : isLoading ? "출석 처리중" : "출석하기"}
+          </Button>
         </Card>
 
         <section className="flex gap-4">
