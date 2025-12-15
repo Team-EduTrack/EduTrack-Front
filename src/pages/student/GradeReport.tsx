@@ -7,65 +7,38 @@ import AttendanceCalendar from "../../components/common/student/AttendanceCalend
 import AttendanceCompareChart from "../../components/common/student/AttendanceChart";
 import ScoreDonut from "../../components/common/student/ScoreDonut";
 import { useParams } from "react-router-dom";
-
-interface Lecture {
-  id: number;
-  name: string;
-  teacher: string;
-}
-
-const mockLectures = [
-  {
-    id: 1,
-    name: "영문법 특강",
-    teacher: "김은아",
-  },
-  {
-    id: 2,
-    name: "재미있는 영어",
-    teacher: "김남규",
-  },
-  {
-    id: 3,
-    name: "중학 내신 특강",
-    teacher: "박상기",
-  },
-  {
-    id: 4,
-    name: "즐거운 알파벳",
-    teacher: "이은경",
-  },
-  {
-    id: 5,
-    name: "보카 독파",
-    teacher: "박상기",
-  },
-  {
-    id: 6,
-    name: "리딩 바이트",
-    teacher: "김은아",
-  },
-];
-
-const attendanceData: Record<string, "present" | "absent"> = {
-  "2025-12-01": "present",
-  "2025-12-02": "absent",
-  "2025-12-03": "present",
-  "2025-12-04": "present",
-};
-
-const mockUnitScores = [20, 55, 50, 45, 70, 80, 30, 15];
-const mockMyScores = [10, 75, 50, 55, 70, 65];
+import useMyLectures from "../../hooks/student/useMyLectures";
+import {
+  useGetMonthlyAttendance,
+  type MyLectureResponse,
+} from "../../api/generated/edutrack";
+import { useRecoilValue } from "recoil";
+import { authState } from "../../stores/authStore";
 
 export default function GradeReport() {
+  const auth = useRecoilValue(authState);
+  const studentId = auth.user?.id;
   const maxScore = 100;
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
   const { lectureId } = useParams();
-  const [clickedLecture, setClickedLecture] = useState<Lecture | null>(null);
+  const [clickedLecture, setClickedLecture] =
+    useState<MyLectureResponse | null>(null);
+
+  const { lectures, isError } = useMyLectures();
 
   const selectedLecture =
     clickedLecture ||
-    mockLectures.find((l) => l.id === Number(lectureId)) ||
+    lectures.find((l) => l.lectureId === Number(lectureId)) ||
     null;
+
+  const { data: monthlyAttendance } = useGetMonthlyAttendance(
+    studentId!,
+    selectedLecture!.lectureId!,
+    { year, month },
+    { query: { enabled: !!studentId && !!selectedLecture } }
+  );
 
   return (
     <Page>
@@ -73,14 +46,16 @@ export default function GradeReport() {
         <PageTitle title="성적 조회" />
         <Card title="강의 리스트">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mockLectures.map((lecture) => (
+            {lectures.map((lecture) => (
               <LectureList
-                key={lecture.id}
-                name={lecture.name}
+                key={lecture.lectureId}
+                name={lecture.lectureTitle ?? "강의명 없음"}
                 onClick={() => setClickedLecture(lecture)}
                 variant="compact"
               >
-                <span className="text-xs mr-4">{lecture.teacher} 강사님</span>
+                <span className="text-xs mr-4">
+                  {lecture.teacherName} 강사님
+                </span>
               </LectureList>
             ))}
           </div>
@@ -98,11 +73,11 @@ export default function GradeReport() {
               <article className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="relative text-sm h-10 flex items-center justify-center">
                   <span className="font-semibold absolute left-7">강의명</span>
-                  <span className="">{selectedLecture.name}</span>
+                  <span className="">{selectedLecture.lectureTitle}</span>
                 </Card>
                 <Card className="relative text-sm h-10 flex items-center justify-center">
                   <span className="font-semibold absolute left-7">강사명</span>
-                  {selectedLecture.teacher} 강사님
+                  {selectedLecture.teacherName} 강사님
                 </Card>
               </article>
 
@@ -113,7 +88,12 @@ export default function GradeReport() {
                       이번 달 출석 현황
                     </h3>
                     <AttendanceCalendar
-                      attendance={attendanceData}
+                      attendedDates={
+                        monthlyAttendance?.data.attendedDates ?? []
+                      }
+                      totalClassDays={monthlyAttendance?.data.totalClassDays}
+                      year={year}
+                      month={month}
                       className="text-center"
                     />
                   </div>

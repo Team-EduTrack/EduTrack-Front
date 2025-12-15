@@ -2,20 +2,41 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { ko } from "date-fns/locale";
 
-type AttendanceStatus = "present" | "absent";
-
 interface Props {
-  attendance: Record<string, AttendanceStatus>;
+  attendedDates: string[];
+  totalClassDays?: number;
+  year: number;
+  month: number;
   className?: string;
 }
 
-export default function AttendanceCalendar({ attendance }: Props) {
-  const presentDays = Object.keys(attendance)
-    .filter((d) => attendance[d] === "present")
+export default function AttendanceCalendar({
+  attendedDates,
+  totalClassDays,
+  year,
+  month,
+}: Props) {
+  const attendanceMap: Record<string, "present" | "absent"> = {};
+
+  if (totalClassDays) {
+    for (let i = 1; i <= totalClassDays; i++) {
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(
+        i
+      ).padStart(2, "0")}`;
+      attendanceMap[dateStr] = "absent";
+    }
+  }
+
+  attendedDates?.forEach((d) => {
+    attendanceMap[d] = "present";
+  });
+
+  const presentDays = Object.keys(attendanceMap)
+    .filter((d) => attendanceMap[d] === "present")
     .map((d) => new Date(d));
 
-  const absentDays = Object.keys(attendance)
-    .filter((d) => attendance[d] === "absent")
+  const absentDays = Object.keys(attendanceMap)
+    .filter((d) => attendanceMap[d] === "absent")
     .map((d) => new Date(d));
 
   return (
