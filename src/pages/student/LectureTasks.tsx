@@ -40,7 +40,6 @@ export default function LectureTasks() {
                   title: lecture.lectureTitle ?? "",
                   teacher: lecture.teacherName ?? "",
                 }}
-                //assignments={[]} // 과제는 TaskCard 내부에서 fetch (자동)
                 exams={examsForLecture}
               />
             );

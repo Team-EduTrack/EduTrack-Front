@@ -30,19 +30,16 @@ export interface Exam {
 
 export default function TaskCard({
   lecture,
-  //assignments,
   exams,
 }: {
   lecture: Lecture;
-  //assignments: Assignment[];
   exams: Exam[];
 }) {
   const [openType, setOpenType] = useState<"assignment" | "exam" | null>(null);
   const navigate = useNavigate();
-  const { assignments: rawAssignments, isLoading: isAssignmentsLoading } =
-    useLectureAssignments(lecture.id);
+  const { assignments: rawAssignments } = useLectureAssignments(lecture.id);
 
-  const assignments = rawAssignments.map(mapAssignment);
+  const lectureAssignments = rawAssignments.map(mapAssignment);
 
   const assignmentColumns: Column<Assignment>[] = [
     {
@@ -175,16 +172,12 @@ export default function TaskCard({
       {/* ▼ 과제 */}
       {openType === "assignment" && (
         <div className="mt-4">
-          {isAssignmentsLoading ? (
-            <p className="text-sm text-gray-500">과제를 불러오는 중…</p>
-          ) : (
-            <Table
-              columns={assignmentColumns}
-              data={assignments}
-              keyExtractor={(row) => row.id}
-              emptyMessage="등록된 과제가 없습니다."
-            />
-          )}
+          <Table
+            columns={assignmentColumns}
+            data={lectureAssignments}
+            keyExtractor={(row) => row.id}
+            emptyMessage="등록된 과제가 없습니다."
+          />
         </div>
       )}
 
