@@ -135,6 +135,8 @@ export interface LectureForTeacherResponse {
 export type LectureDetailForTeacherResponseAllOf = {
   description?: string;
   studentDetails?: StudentInfo[];
+  assignmentsWithSubmissions?: AssignmentWithSubmissions[];
+  examsWithParticipation?: ExamParticipationInfo[];
 };
 
 export type LectureDetailForTeacherResponse = LectureForTeacherResponse & LectureDetailForTeacherResponseAllOf;
@@ -142,6 +144,25 @@ export type LectureDetailForTeacherResponse = LectureForTeacherResponse & Lectur
 export interface StudentInfo {
   id?: number;
   name?: string;
+}
+
+export interface AssignmentWithSubmissions {
+  assignmentId?: number;
+  assignmentTitle?: string;
+  submittedStudents?: SubmissionStudentInfo[];
+}
+
+export interface SubmissionStudentInfo {
+  studentId?: number;
+  studentName?: string;
+  submissionId?: number;
+}
+
+export interface ExamParticipationInfo {
+  examId?: number;
+  examTitle?: string;
+  participatedCount?: number;
+  totalStudentCount?: number;
 }
 
 export interface LectureDetailWithStatisticsResponse {
@@ -485,6 +506,46 @@ export interface ExamSummaryResponse {
   status?: string;
 }
 
+export interface StudentAnalysisResponse {
+  studentId?: number;
+  /** @nullable */
+  avgScore?: number | null;
+  unitWeak?: string[];
+  trend?: number[];
+}
+
+export interface StudentExamSummaryResponse {
+  examId?: number;
+  examTitle?: string;
+  lectureName?: string;
+  /** @nullable */
+  totalScore?: number | null;
+  /** @nullable */
+  earnedScore?: number | null;
+  /** @nullable */
+  submittedAt?: string | null;
+}
+
+export interface StudentUnitCorrectRateResponse {
+  unitId?: number;
+  studentId?: number;
+  totalTryCount?: number;
+  correctCount?: number;
+  correctRate?: number;
+}
+
+export interface StudentLectureAttendanceResponse {
+  lectureId?: number;
+  lectureName?: string;
+  year?: number;
+  month?: number;
+  attendedDates?: string[];
+  totalClassDays?: number;
+  attendedDays?: number;
+  attendanceRate?: number;
+  otherStudentsAvgAttendanceRate?: number;
+}
+
 export type SearchUsersParams = {
 role?: SearchUsersRole;
 keyword?: string;
@@ -511,6 +572,19 @@ studentId: number;
 
 export type SubmitAssignmentParams = {
 studentId: number;
+};
+
+export type GetWeakUnitsParams = {
+limit?: number;
+};
+
+export type GetMonthlyAttendanceParams = {
+year: number;
+/**
+ * @minimum 1
+ * @maximum 12
+ */
+month: number;
 };
 
 /**
@@ -3064,6 +3138,290 @@ export function useGetMyExams<TData = Awaited<ReturnType<typeof getMyExams>>, TE
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetMyExamsQueryOptions(studentId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary 학생 통합 분석 리포트 조회
+ */
+export const getStudentAnalysis = (
+    studentId: number, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<StudentAnalysisResponse>> => {
+    
+    
+    return axios.default.get(
+      `/api/analysis/student/${studentId}`,options
+    );
+  }
+
+
+
+
+export const getGetStudentAnalysisQueryKey = (studentId?: number,) => {
+    return [
+    `/api/analysis/student/${studentId}`
+    ] as const;
+    }
+
+    
+export const getGetStudentAnalysisQueryOptions = <TData = Awaited<ReturnType<typeof getStudentAnalysis>>, TError = AxiosError<void>>(studentId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStudentAnalysis>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStudentAnalysisQueryKey(studentId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStudentAnalysis>>> = ({ signal }) => getStudentAnalysis(studentId, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(studentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStudentAnalysis>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStudentAnalysisQueryResult = NonNullable<Awaited<ReturnType<typeof getStudentAnalysis>>>
+export type GetStudentAnalysisQueryError = AxiosError<void>
+
+
+/**
+ * @summary 학생 통합 분석 리포트 조회
+ */
+
+export function useGetStudentAnalysis<TData = Awaited<ReturnType<typeof getStudentAnalysis>>, TError = AxiosError<void>>(
+ studentId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStudentAnalysis>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStudentAnalysisQueryOptions(studentId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary 학생 전체 시험 요약 조회
+ */
+export const getExamSummary = (
+    studentId: number, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<StudentExamSummaryResponse[]>> => {
+    
+    
+    return axios.default.get(
+      `/api/students/${studentId}/analysis/exams`,options
+    );
+  }
+
+
+
+
+export const getGetExamSummaryQueryKey = (studentId?: number,) => {
+    return [
+    `/api/students/${studentId}/analysis/exams`
+    ] as const;
+    }
+
+    
+export const getGetExamSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getExamSummary>>, TError = AxiosError<void>>(studentId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExamSummary>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetExamSummaryQueryKey(studentId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getExamSummary>>> = ({ signal }) => getExamSummary(studentId, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(studentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getExamSummary>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetExamSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getExamSummary>>>
+export type GetExamSummaryQueryError = AxiosError<void>
+
+
+/**
+ * @summary 학생 전체 시험 요약 조회
+ */
+
+export function useGetExamSummary<TData = Awaited<ReturnType<typeof getExamSummary>>, TError = AxiosError<void>>(
+ studentId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExamSummary>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetExamSummaryQueryOptions(studentId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary 학생의 단원별 성취도 조회 (정답률 낮은 순)
+ */
+export const getWeakUnits = (
+    studentId: number,
+    params?: GetWeakUnitsParams, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<StudentUnitCorrectRateResponse[]>> => {
+    
+    
+    return axios.default.get(
+      `/api/students/${studentId}/analysis/weak-units`,{
+    ...options,
+        params: {...params, ...options?.params},}
+    );
+  }
+
+
+
+
+export const getGetWeakUnitsQueryKey = (studentId?: number,
+    params?: GetWeakUnitsParams,) => {
+    return [
+    `/api/students/${studentId}/analysis/weak-units`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetWeakUnitsQueryOptions = <TData = Awaited<ReturnType<typeof getWeakUnits>>, TError = AxiosError<void>>(studentId: number,
+    params?: GetWeakUnitsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWeakUnits>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWeakUnitsQueryKey(studentId,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWeakUnits>>> = ({ signal }) => getWeakUnits(studentId,params, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(studentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWeakUnits>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetWeakUnitsQueryResult = NonNullable<Awaited<ReturnType<typeof getWeakUnits>>>
+export type GetWeakUnitsQueryError = AxiosError<void>
+
+
+/**
+ * @summary 학생의 단원별 성취도 조회 (정답률 낮은 순)
+ */
+
+export function useGetWeakUnits<TData = Awaited<ReturnType<typeof getWeakUnits>>, TError = AxiosError<void>>(
+ studentId: number,
+    params?: GetWeakUnitsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWeakUnits>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetWeakUnitsQueryOptions(studentId,params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
+ * @summary 학생의 강의별 월간 출석 현황 조회
+ */
+export const getMonthlyAttendance = (
+    studentId: number,
+    lectureId: number,
+    params: GetMonthlyAttendanceParams, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<StudentLectureAttendanceResponse>> => {
+    
+    
+    return axios.default.get(
+      `/api/students/${studentId}/lectures/${lectureId}/attendance/monthly`,{
+    ...options,
+        params: {...params, ...options?.params},}
+    );
+  }
+
+
+
+
+export const getGetMonthlyAttendanceQueryKey = (studentId?: number,
+    lectureId?: number,
+    params?: GetMonthlyAttendanceParams,) => {
+    return [
+    `/api/students/${studentId}/lectures/${lectureId}/attendance/monthly`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetMonthlyAttendanceQueryOptions = <TData = Awaited<ReturnType<typeof getMonthlyAttendance>>, TError = AxiosError<void>>(studentId: number,
+    lectureId: number,
+    params: GetMonthlyAttendanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMonthlyAttendance>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMonthlyAttendanceQueryKey(studentId,lectureId,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMonthlyAttendance>>> = ({ signal }) => getMonthlyAttendance(studentId,lectureId,params, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(studentId && lectureId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMonthlyAttendance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMonthlyAttendanceQueryResult = NonNullable<Awaited<ReturnType<typeof getMonthlyAttendance>>>
+export type GetMonthlyAttendanceQueryError = AxiosError<void>
+
+
+/**
+ * @summary 학생의 강의별 월간 출석 현황 조회
+ */
+
+export function useGetMonthlyAttendance<TData = Awaited<ReturnType<typeof getMonthlyAttendance>>, TError = AxiosError<void>>(
+ studentId: number,
+    lectureId: number,
+    params: GetMonthlyAttendanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMonthlyAttendance>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMonthlyAttendanceQueryOptions(studentId,lectureId,params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
