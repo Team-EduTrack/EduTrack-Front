@@ -1,31 +1,46 @@
 import Table from "../../components/common/Table";
 import Page from "../../components/common/Page";
 import ViewMore from "../../components/ViewMore";
+import { useRecoilValue } from "recoil";
+import { authState } from "../../stores/authStore";
+import { useSearchUsers } from "../../api/generated/edutrack";
 
 export default function PrincipalDashBoard() {
-  const academyInfo = {
-    academyName: "대성 학원",
-    principalName: "김아무개",
-    userId: "hayeon0513",
-    academyCode: "EDU-1234",
-  };
-  const teachers = [
-    { id: 1, name: "고지은", subject: "영어" },
-    { id: 2, name: "김려리", subject: "국어" },
-    { id: 3, name: "나윤서", subject: "사회" },
-    { id: 4, name: "도한우", subject: "과학" },
-    { id: 5, name: "라민지", subject: "수학" },
-    { id: 6, name: "마서현", subject: "국어" },
-  ];
+  const auth = useRecoilValue(authState);
+  const academyId = auth.user?.academy?.id;
 
-  const students = [
-    { id: 1, name: "박이안" },
-    { id: 2, name: "배지안" },
-    { id: 3, name: "서우진" },
-    { id: 4, name: "손다혜" },
-    { id: 5, name: "송예린" },
-    { id: 6, name: "신아율" },
-  ];
+  const { data: teachersRes } = useSearchUsers(academyId ?? 0, {
+    role: "TEACHER",
+  });
+
+  const { data: studentsRes } = useSearchUsers(academyId ?? 0, {
+    role: "STUDENT",
+  });
+
+  const teachersRaw = teachersRes?.data ?? [];
+  const studentsRaw = studentsRes?.data ?? [];
+
+  const teachers = teachersRaw.slice(0, 6).map((u, idx) => ({
+    no: idx + 1,
+    userId: u.id!,
+    name: u.name ?? "-",
+  }));
+
+  const students = studentsRaw.slice(0, 6).map((u, idx) => ({
+    no: idx + 1,
+    userId: u.id!,
+    name: u.name ?? "-",
+  }));
+
+  if (!academyId) {
+    return (
+      <Page>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-10">
+          학원 정보가 없습니다.
+        </div>
+      </Page>
+    );
+  }
 
   return (
     <Page>
@@ -35,11 +50,11 @@ export default function PrincipalDashBoard() {
             {/* 왼쪽 텍스트 영역 */}
             <div className="flex flex-col gap-3">
               <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-4">
-                {academyInfo.academyName}
+                {auth.user?.academy?.name}
               </h2>
 
               <p className="text-lg font-medium text-gray-800">
-                {academyInfo.principalName}원장님, 환영합니다 👋
+                {auth.user?.name}원장님, 환영합니다 👋
               </p>
 
               <p className="text-gray-600 leading-relaxed max-w-md">
@@ -52,13 +67,13 @@ export default function PrincipalDashBoard() {
               <div className="mb-4">
                 <p className="text-xs font-semibold text-gray-600">아이디</p>
                 <p className="text-lg font-bold text-gray-800 mb-2">
-                  {academyInfo.userId}
+                  {auth.user?.loginId}
                 </p>
               </div>
               <div>
                 <p className="text-xs font-semibold text-gray-600">학원 코드</p>
                 <p className="text-lg font-bold text-gray-800">
-                  {academyInfo.academyCode}
+                  {auth.user?.academy?.code}
                 </p>
               </div>
             </div>
@@ -77,20 +92,19 @@ export default function PrincipalDashBoard() {
 
             <Table
               columns={[
-                { header: "NO", accessor: "id", className: "text-center" },
+                {
+                  header: "NO",
+                  accessor: "no",
+                  className: "text-center w-40",
+                },
                 {
                   header: "이름",
                   accessor: "name",
                   className: "text-center pl-4",
                 },
-                {
-                  header: "과목",
-                  accessor: "subject",
-                  className: "text-center",
-                },
               ]}
               data={teachers}
-              keyExtractor={(row) => row.id}
+              keyExtractor={(row) => row.userId}
               emptyMessage="강사 정보가 없습니다."
             />
           </div>
@@ -106,7 +120,11 @@ export default function PrincipalDashBoard() {
 
             <Table
               columns={[
-                { header: "NO", accessor: "id", className: "text-center" },
+                {
+                  header: "NO",
+                  accessor: "no",
+                  className: "text-center w-40",
+                },
                 {
                   header: "이름",
                   accessor: "name",
@@ -114,7 +132,7 @@ export default function PrincipalDashBoard() {
                 },
               ]}
               data={students}
-              keyExtractor={(row) => row.id}
+              keyExtractor={(row) => row.userId}
               emptyMessage="학생 정보가 없습니다."
             />
           </div>
