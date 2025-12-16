@@ -12,7 +12,7 @@ export default function UnitScoreChart({
   barColor = "#3b82f6",
 }: UnitScoreChartProps) {
   return (
-    <div className="bg-base-100 p-4 rounded-lg shadow">
+    <div className="bg-base-100 p-4">
       <h3 className="text-sm font-semibold text-center mb-4">{title}</h3>
       <div className="flex items-end justify-center gap-3 h-44">
         {scores.map((score, idx) => (
