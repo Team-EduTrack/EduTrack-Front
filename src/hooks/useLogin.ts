@@ -11,7 +11,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: loginApi,
 
-    async onSuccess(response) {
+    async onSuccess(response, variables) {
       const { accessToken, refreshToken } = response.data;
 
       
@@ -32,6 +32,7 @@ export function useLogin() {
           name: me.name,
           email: me.email,
           role: me.role,
+          loginId: variables.loginId,
           academy: me.academy
             ? {
                 id: me.academy.id,

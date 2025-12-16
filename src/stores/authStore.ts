@@ -13,7 +13,7 @@ export interface AuthUser {
   name: string | null;
   email: string | null;
   role: UserRole | null;
-  
+  loginId: string | null; 
   academy: AcademyInfo | null;
 }
 
