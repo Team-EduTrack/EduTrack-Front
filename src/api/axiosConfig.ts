@@ -1,31 +1,23 @@
 import axios, { type AxiosRequestHeaders } from "axios";
 
-
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
 
     if (token) {
-      
       if (!config.headers) {
-        config.headers = {} as AxiosRequestHeaders; 
+        config.headers = {} as AxiosRequestHeaders;
       }
-
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-
 axios.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     const status = error.response?.status;
 
@@ -41,5 +33,3 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-

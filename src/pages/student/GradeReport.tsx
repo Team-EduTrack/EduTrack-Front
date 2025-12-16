@@ -9,6 +9,7 @@ import ScoreDonut from "../../components/common/student/ScoreDonut";
 import { useParams } from "react-router-dom";
 import useMyLectures from "../../hooks/student/useMyLectures";
 import {
+  useGetLectureUnitCorrectRates,
   useGetMonthlyAttendance,
   useGetWeakUnits,
   type MyLectureResponse,
@@ -20,6 +21,7 @@ import UnitScoreChart from "../../components/charts/UnitScoreChart";
 export default function GradeReport() {
   const auth = useRecoilValue(authState);
   const studentId = auth.user?.id;
+
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
@@ -41,10 +43,17 @@ export default function GradeReport() {
     { year, month }
   );
 
-  const { data } = useGetWeakUnits(studentId!, { limit: 8 });
-  const weakUnits = data?.data ?? [];
-  // const { data: analysisResponse } = useGetStudentAnalysis(studentId!);
-  // const studentAnalysis = analysisResponse?.data;
+  const { data: weakUnitsRes } = useGetWeakUnits(studentId!, { limit: 8 });
+  const weakUnits = weakUnitsRes?.data ?? [];
+  const { data: lectureAvgRes } =
+    useGetLectureUnitCorrectRates(selectedLectureId);
+  const lectureAvgUnits = lectureAvgRes?.data ?? [];
+
+  const avgRateByUnitId = new Map(
+    lectureAvgUnits
+      .filter((u) => u.unitId != null)
+      .map((u) => [u.unitId as number, u.correctRate ?? 0])
+  );
 
   return (
     <Page>
@@ -130,23 +139,27 @@ export default function GradeReport() {
                 </div>
               </Card>
 
-              <UnitScoreChart
-                title="나의 단원별 정답률"
-                scores={
-                  weakUnits?.map((u) => ({
-                    value: u.correctRate ?? 0,
-                  })) ?? []
-                }
-              />
-              {/* <UnitScoreChart
-                title="수강생 전체 단원별 평균"
-                scores={
-                  studentAnalysis?.avgScore.map((v, i) => ({
-                    name: `단원 ${i + 1}`,
-                    value: v,
-                  })) ?? []
-                }
-              /> */}
+              <Card title="단원별 정답률">
+                <div className="grid grid-cols-2 gap-12 ">
+                  <UnitScoreChart
+                    title="나의 단원별 정답률"
+                    scores={
+                      weakUnits?.map((u) => ({
+                        value: u.correctRate ?? 0,
+                      })) ?? []
+                    }
+                  />
+
+                  <UnitScoreChart
+                    title="수강생 전체 단원별 평균"
+                    scores={weakUnits
+                      .filter((u) => u.unitId != null)
+                      .map((u) => ({
+                        value: avgRateByUnitId.get(u.unitId as number) ?? 0,
+                      }))}
+                  />
+                </div>
+              </Card>
             </section>
           )}
         </Card>
