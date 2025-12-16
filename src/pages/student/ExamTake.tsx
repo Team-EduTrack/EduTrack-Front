@@ -77,7 +77,7 @@ export default function ExamTakePage() {
   };
 
   if (isError || !examDetail)
-    return <div>시험 데이터를 불러오지 못했습니다.</div>;
+    return <Page>시험 데이터를 불러오지 못했습니다.</Page>;
 
   return (
     <Page>

@@ -37,7 +37,9 @@ export default function TaskCard({
 }) {
   const [openType, setOpenType] = useState<"assignment" | "exam" | null>(null);
   const navigate = useNavigate();
-  const { assignments: rawAssignments } = useLectureAssignments(lecture.id);
+  const { assignments: rawAssignments, isError } = useLectureAssignments(
+    lecture.id
+  );
 
   const lectureAssignments = rawAssignments.map(mapAssignment);
 

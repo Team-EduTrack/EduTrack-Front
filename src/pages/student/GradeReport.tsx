@@ -7,65 +7,53 @@ import AttendanceCalendar from "../../components/common/student/AttendanceCalend
 import AttendanceCompareChart from "../../components/common/student/AttendanceChart";
 import ScoreDonut from "../../components/common/student/ScoreDonut";
 import { useParams } from "react-router-dom";
-
-interface Lecture {
-  id: number;
-  name: string;
-  teacher: string;
-}
-
-const mockLectures = [
-  {
-    id: 1,
-    name: "영문법 특강",
-    teacher: "김은아",
-  },
-  {
-    id: 2,
-    name: "재미있는 영어",
-    teacher: "김남규",
-  },
-  {
-    id: 3,
-    name: "중학 내신 특강",
-    teacher: "박상기",
-  },
-  {
-    id: 4,
-    name: "즐거운 알파벳",
-    teacher: "이은경",
-  },
-  {
-    id: 5,
-    name: "보카 독파",
-    teacher: "박상기",
-  },
-  {
-    id: 6,
-    name: "리딩 바이트",
-    teacher: "김은아",
-  },
-];
-
-const attendanceData: Record<string, "present" | "absent"> = {
-  "2025-12-01": "present",
-  "2025-12-02": "absent",
-  "2025-12-03": "present",
-  "2025-12-04": "present",
-};
-
-const mockUnitScores = [20, 55, 50, 45, 70, 80, 30, 15];
-const mockMyScores = [10, 75, 50, 55, 70, 65];
+import useMyLectures from "../../hooks/student/useMyLectures";
+import {
+  useGetLectureUnitCorrectRates,
+  useGetMonthlyAttendance,
+  useGetWeakUnits,
+  type MyLectureResponse,
+} from "../../api/generated/edutrack";
+import { useRecoilValue } from "recoil";
+import { authState } from "../../stores/authStore";
+import UnitScoreChart from "../../components/charts/UnitScoreChart";
 
 export default function GradeReport() {
-  const maxScore = 100;
+  const auth = useRecoilValue(authState);
+  const studentId = auth.user?.id;
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
   const { lectureId } = useParams();
-  const [clickedLecture, setClickedLecture] = useState<Lecture | null>(null);
+  const [clickedLecture, setClickedLecture] =
+    useState<MyLectureResponse | null>(null);
+  const selectedLectureId = clickedLecture?.lectureId ?? Number(lectureId);
+
+  const { lectures } = useMyLectures();
 
   const selectedLecture =
     clickedLecture ||
-    mockLectures.find((l) => l.id === Number(lectureId)) ||
+    lectures.find((l) => l.lectureId === Number(lectureId)) ||
     null;
+
+  const { data: monthlyAttendance } = useGetMonthlyAttendance(
+    studentId!,
+    selectedLectureId,
+    { year, month }
+  );
+
+  const { data: weakUnitsRes } = useGetWeakUnits(studentId!, { limit: 8 });
+  const weakUnits = weakUnitsRes?.data ?? [];
+  const { data: lectureAvgRes } =
+    useGetLectureUnitCorrectRates(selectedLectureId);
+  const lectureAvgUnits = lectureAvgRes?.data ?? [];
+
+  const avgRateByUnitId = new Map(
+    lectureAvgUnits
+      .filter((u) => u.unitId != null)
+      .map((u) => [u.unitId as number, u.correctRate ?? 0])
+  );
 
   return (
     <Page>
@@ -73,20 +61,22 @@ export default function GradeReport() {
         <PageTitle title="성적 조회" />
         <Card title="강의 리스트">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mockLectures.map((lecture) => (
+            {lectures.map((lecture) => (
               <LectureList
-                key={lecture.id}
-                name={lecture.name}
+                key={lecture.lectureId}
+                name={lecture.lectureTitle ?? "강의명 없음"}
                 onClick={() => setClickedLecture(lecture)}
                 variant="compact"
               >
-                <span className="text-xs mr-4">{lecture.teacher} 강사님</span>
+                <span className="text-xs mr-4">
+                  {lecture.teacherName} 강사님
+                </span>
               </LectureList>
             ))}
           </div>
         </Card>
 
-        <Card title="김민경학생의 성적 리포트">
+        <Card title={auth.user?.name ?? ""}>
           {!selectedLecture && (
             <p className="text-gray-400">
               강의를 선택하면 성적 리포트가 표시됩니다.
@@ -98,11 +88,11 @@ export default function GradeReport() {
               <article className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="relative text-sm h-10 flex items-center justify-center">
                   <span className="font-semibold absolute left-7">강의명</span>
-                  <span className="">{selectedLecture.name}</span>
+                  <span className="">{selectedLecture.lectureTitle}</span>
                 </Card>
                 <Card className="relative text-sm h-10 flex items-center justify-center">
                   <span className="font-semibold absolute left-7">강사명</span>
-                  {selectedLecture.teacher} 강사님
+                  {selectedLecture.teacherName} 강사님
                 </Card>
               </article>
 
@@ -113,7 +103,12 @@ export default function GradeReport() {
                       이번 달 출석 현황
                     </h3>
                     <AttendanceCalendar
-                      attendance={attendanceData}
+                      attendedDates={
+                        monthlyAttendance?.data.attendedDates ?? []
+                      }
+                      totalClassDays={monthlyAttendance?.data.totalClassDays}
+                      year={year}
+                      month={month}
                       className="text-center"
                     />
                   </div>
@@ -121,7 +116,13 @@ export default function GradeReport() {
                     <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
                       다른 수강생의 평균 출석률
                     </h3>
-                    <AttendanceCompareChart myRate={92} classRate={85} />
+                    <AttendanceCompareChart
+                      myRate={monthlyAttendance?.data.attendanceRate ?? 0}
+                      classRate={
+                        monthlyAttendance?.data
+                          .otherStudentsAvgAttendanceRate ?? 0
+                      }
+                    />
                   </div>
                 </div>
               </Card>
@@ -137,37 +138,26 @@ export default function GradeReport() {
                   </div>
                 </div>
               </Card>
-              <Card title="단원별 정답률">
-                <div className="grid grid-cols-2 gap-12">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
-                      수강생 전체 단원별 정답률
-                    </h3>
-                    <div className="flex items-end justify-center gap-3 h-44">
-                      {mockUnitScores.map((score, index) => (
-                        <div
-                          key={index}
-                          className="w-10 bg-blue-400 rounded-t transition-all hover:bg-blue-500"
-                          style={{ height: `${(score / maxScore) * 160}px` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
-                      다른 강의평균 성적
-                    </h3>
-                    <div className="flex items-end justify-center gap-3 h-44">
-                      {mockMyScores.map((score, index) => (
-                        <div
-                          key={index}
-                          className="w-10 bg-blue-400 rounded-t transition-all hover:bg-blue-500"
-                          style={{ height: `${(score / maxScore) * 160}px` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
+              <Card title="단원별 정답률">
+                <div className="grid grid-cols-2 gap-12 ">
+                  <UnitScoreChart
+                    title="나의 단원별 정답률"
+                    scores={
+                      weakUnits?.map((u) => ({
+                        value: u.correctRate ?? 0,
+                      })) ?? []
+                    }
+                  />
+
+                  <UnitScoreChart
+                    title="수강생 전체 단원별 평균"
+                    scores={weakUnits
+                      .filter((u) => u.unitId != null)
+                      .map((u) => ({
+                        value: avgRateByUnitId.get(u.unitId as number) ?? 0,
+                      }))}
+                  />
                 </div>
               </Card>
             </section>
