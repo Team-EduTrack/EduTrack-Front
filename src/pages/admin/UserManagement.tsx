@@ -5,16 +5,7 @@ import Table from "../../components/common/Table";
 import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
 import Button from "../../components/common/Button";
-
-interface User {
-  id: number;
-  name: string;
-  role: string;
-  userId: string;
-  phone: string;
-  code: string;
-  createdAt: Date;
-}
+import type { User } from "../../types/user";
 
 export default function UserManagement() {
   const [searchType, setSearchType] = useState("회원을 선택하세요");
@@ -24,62 +15,7 @@ export default function UserManagement() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [generatedCode, setGeneratedCode] = useState("");
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: "김이름",
-      role: "원장",
-      userId: "aaaa@91",
-      phone: "01012345671",
-      code: "EDU-1234",
-      createdAt: new Date("2025-11-20"),
-    },
-    {
-      id: 2,
-      name: "이이름",
-      role: "원장",
-      userId: "cccc@92",
-      phone: "01012345672",
-      code: "EDU-1235",
-      createdAt: new Date("2025-11-21"),
-    },
-    {
-      id: 3,
-      name: "박이름",
-      role: "원장",
-      userId: "bbbb01",
-      phone: "01012345673",
-      code: "EDU-1236",
-      createdAt: new Date("2025-11-22"),
-    },
-    {
-      id: 4,
-      name: "송이름",
-      role: "원장",
-      userId: "eeee87",
-      phone: "01012345674",
-      code: "EDU-1237",
-      createdAt: new Date("2025-11-23"),
-    },
-    {
-      id: 5,
-      name: "정이름",
-      role: "원장",
-      userId: "rrrr42",
-      phone: "01012345675",
-      code: "EDU-1238",
-      createdAt: new Date("2025-11-18"),
-    },
-    {
-      id: 6,
-      name: "손이름",
-      role: "원장",
-      userId: "ssss78",
-      phone: "01012345676",
-      code: "EDU-1239",
-      createdAt: new Date("2025-11-19"),
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
 
   const filteredUsers = useMemo(() => {
     let result = [...users];
@@ -161,7 +97,6 @@ export default function UserManagement() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleDirectorCreated}
-        existingUsers={users}
       />
       <SuccessModal
         isOpen={isSuccessModalOpen}
