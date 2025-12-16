@@ -6,7 +6,6 @@ import Table, { type Column } from "../Table";
 import { useNavigate } from "react-router-dom";
 import useLectureAssignments from "../../../hooks/student/useLectureAssignment";
 import { mapAssignment } from "../../../utils/mappers/assignmentMapper";
-import Page from "../Page";
 
 interface Lecture {
   id: number;
@@ -41,8 +40,6 @@ export default function TaskCard({
   const { assignments: rawAssignments, isError } = useLectureAssignments(
     lecture.id
   );
-
-  if (isError) return <p>과제가 존재하지 않습니다.</p>;
 
   const lectureAssignments = rawAssignments.map(mapAssignment);
 

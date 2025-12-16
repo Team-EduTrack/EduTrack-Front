@@ -4,12 +4,17 @@ import PageTitle from "../../components/common/PageTitle";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import { useState, type FormEvent } from "react";
-import { useMyAssignmentSubmission } from "../../hooks/student/useMyAssignmentSubmission";
 import { useSubmitAssignmentMutation } from "../../hooks/student/useAssignmentSubmissionMutation";
-import useMyAssignments from "../../hooks/student/useMyAssignments";
+import { useGetMySubmission } from "../../api/generated/edutrack";
+import { toMySubmissionType } from "../../types/assignment";
+import { useRecoilValue } from "recoil";
+import { authState } from "../../stores/authStore";
 
 export default function AssignmentSubmit() {
   const navigate = useNavigate();
+  const auth = useRecoilValue(authState);
+
+  const academyId = auth.user?.academy?.id;
 
   const { assignmentId } = useParams();
   const parsedAssignmentId = Number(assignmentId);
@@ -17,16 +22,13 @@ export default function AssignmentSubmit() {
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | undefined>();
 
-  const { submission, isSubmitted, isLoading } =
-    useMyAssignmentSubmission(parsedAssignmentId);
+  const submitMutation = useSubmitAssignmentMutation();
 
-  const { submit } = useSubmitAssignmentMutation();
-
-  const { assignments } = useMyAssignments();
-
-  const assignment = assignments.find(
-    (a) => a.assignmentId === parsedAssignmentId
+  const { data: mySubmissionRes, isLoading } = useGetMySubmission(
+    academyId!,
+    parsedAssignmentId
   );
+  const mySubmission = toMySubmissionType(mySubmissionRes?.data);
 
   if (isLoading) {
     return (
@@ -37,7 +39,7 @@ export default function AssignmentSubmit() {
     );
   }
 
-  if (!assignment) {
+  if (!mySubmission) {
     return (
       <Page>
         <PageTitle title="과제 제출" />
@@ -46,7 +48,7 @@ export default function AssignmentSubmit() {
     );
   }
 
-  if (isSubmitted) {
+  if (mySubmission.submitted) {
     return (
       <Page>
         <PageTitle title="과제 제출" />
@@ -56,7 +58,19 @@ export default function AssignmentSubmit() {
           </h2>
 
           <p className="text-sm text-gray-600">
-            제출 내용: {submission?.assignmentTitle}
+            과제명: {mySubmission.assignmentTitle}
+          </p>
+
+          <p className="text-sm text-gray-600">
+            제출 파일: {mySubmission.filePath ?? "-"}
+          </p>
+
+          <p className="text-sm text-gray-600">
+            점수: {mySubmission.score ?? "채점 전"}
+          </p>
+
+          <p className="text-sm text-gray-600 whitespace-pre-wrap">
+            피드백: {mySubmission.feedback ?? "아직 피드백이 없습니다."}
           </p>
 
           <Button disabled>제출 완료</Button>
@@ -68,18 +82,21 @@ export default function AssignmentSubmit() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (isSubmitted) return;
-
     const ok = window.confirm("과제를 제출하시겠습니까?");
     if (!ok) return;
 
-    submit({
-      assignmentId: parsedAssignmentId,
-      content,
-      file,
-    });
-
-    navigate(`/student/tasks`);
+    submitMutation.mutate(
+      {
+        academyId: academyId!,
+        assignmentId: parsedAssignmentId,
+        content,
+        file,
+      },
+      {
+        onSuccess: () => navigate("/student/tasks"),
+        onError: () => alert("제출 실패"),
+      }
+    );
   };
 
   return (
@@ -89,19 +106,20 @@ export default function AssignmentSubmit() {
         <Card className="p-8 space-y-4">
           <article className="space-y-4">
             <h1 className="text-2xl font-bold text-gray-900">
-              {submission?.lectureName}
+              {mySubmission.lectureName}
             </h1>
             <p className="text-sm text-gray-600 font-semibold">
-              {submission?.teacherName} 강사님
+              {mySubmission.teacherName} 강사님
             </p>
 
             <p className="text-sm text-gray-600 font-semibold">
-              마감 기한 :<span className="font-bold">{assignment.endDate}</span>
+              마감 기한 :
+              <span className="font-bold ml-2">{mySubmission.endDate}</span>
             </p>
             <div>
               <p className="text-sm text-gray-600 font-semibold">과제 설명</p>
               <p className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600 leading-relaxed mt-3">
-                {submission?.assignmentDescription}
+                {mySubmission.assignmentDescription}
               </p>
             </div>
           </article>

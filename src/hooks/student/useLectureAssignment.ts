@@ -14,8 +14,6 @@ export default function useLectureAssignments(lectureId: number) {
 
   const assignments = query.data?.data ?? [];
 
-  console.log("academyId:", academyId, "lectureId:", lectureId);
-
   return {
     ...query,        
     assignments,     
