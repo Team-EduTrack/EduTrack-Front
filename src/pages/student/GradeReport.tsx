@@ -10,23 +10,25 @@ import { useParams } from "react-router-dom";
 import useMyLectures from "../../hooks/student/useMyLectures";
 import {
   useGetMonthlyAttendance,
+  useGetWeakUnits,
   type MyLectureResponse,
 } from "../../api/generated/edutrack";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../stores/authStore";
+import UnitScoreChart from "../../components/charts/UnitScoreChart";
 
 export default function GradeReport() {
   const auth = useRecoilValue(authState);
   const studentId = auth.user?.id;
-  const maxScore = 100;
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
   const { lectureId } = useParams();
   const [clickedLecture, setClickedLecture] =
     useState<MyLectureResponse | null>(null);
+  const selectedLectureId = clickedLecture?.lectureId ?? Number(lectureId);
 
-  const { lectures, isError } = useMyLectures();
+  const { lectures } = useMyLectures();
 
   const selectedLecture =
     clickedLecture ||
@@ -35,10 +37,14 @@ export default function GradeReport() {
 
   const { data: monthlyAttendance } = useGetMonthlyAttendance(
     studentId!,
-    selectedLecture!.lectureId!,
-    { year, month },
-    { query: { enabled: !!studentId && !!selectedLecture } }
+    selectedLectureId,
+    { year, month }
   );
+
+  const { data } = useGetWeakUnits(studentId!, { limit: 8 });
+  const weakUnits = data?.data ?? [];
+  // const { data: analysisResponse } = useGetStudentAnalysis(studentId!);
+  // const studentAnalysis = analysisResponse?.data;
 
   return (
     <Page>
@@ -61,7 +67,7 @@ export default function GradeReport() {
           </div>
         </Card>
 
-        <Card title="김민경학생의 성적 리포트">
+        <Card title={auth.user?.name ?? ""}>
           {!selectedLecture && (
             <p className="text-gray-400">
               강의를 선택하면 성적 리포트가 표시됩니다.
@@ -123,39 +129,24 @@ export default function GradeReport() {
                   </div>
                 </div>
               </Card>
-              <Card title="단원별 정답률">
-                <div className="grid grid-cols-2 gap-12">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
-                      수강생 전체 단원별 정답률
-                    </h3>
-                    <div className="flex items-end justify-center gap-3 h-44">
-                      {mockUnitScores.map((score, index) => (
-                        <div
-                          key={index}
-                          className="w-10 bg-blue-400 rounded-t transition-all hover:bg-blue-500"
-                          style={{ height: `${(score / maxScore) * 160}px` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
-                      다른 강의평균 성적
-                    </h3>
-                    <div className="flex items-end justify-center gap-3 h-44">
-                      {mockMyScores.map((score, index) => (
-                        <div
-                          key={index}
-                          className="w-10 bg-blue-400 rounded-t transition-all hover:bg-blue-500"
-                          style={{ height: `${(score / maxScore) * 160}px` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <UnitScoreChart
+                title="나의 단원별 정답률"
+                scores={
+                  weakUnits?.map((u) => ({
+                    value: u.correctRate ?? 0,
+                  })) ?? []
+                }
+              />
+              {/* <UnitScoreChart
+                title="수강생 전체 단원별 평균"
+                scores={
+                  studentAnalysis?.avgScore.map((v, i) => ({
+                    name: `단원 ${i + 1}`,
+                    value: v,
+                  })) ?? []
+                }
+              /> */}
             </section>
           )}
         </Card>
