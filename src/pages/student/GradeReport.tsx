@@ -101,7 +101,13 @@ export default function GradeReport() {
                     <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
                       다른 수강생의 평균 출석률
                     </h3>
-                    <AttendanceCompareChart myRate={92} classRate={85} />
+                    <AttendanceCompareChart
+                      myRate={monthlyAttendance?.data.attendanceRate ?? 0}
+                      classRate={
+                        monthlyAttendance?.data
+                          .otherStudentsAvgAttendanceRate ?? 0
+                      }
+                    />
                   </div>
                 </div>
               </Card>
