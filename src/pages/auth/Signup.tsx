@@ -1,16 +1,16 @@
 import { useMemo, useState, type ChangeEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import BaseInput from "../../components/common/input/BaseInput";
 import PasswordInput from "../../components/common/input/PasswordInput";
+import type { SignupErrors, SignupForm } from "../../types/signup";
 import { validateField } from "../../utils/validationField";
-import type { SignupForm, SignupErrors } from "../../types/signup";
-import { Link, useNavigate } from "react-router-dom";
 
 import {
-  useSignupRequest,
-  useSendEmailVerification,
-  useVerifyEmail,
-  useVerifyAcademy,
   useCompleteSignup,
+  useSendEmailVerification,
+  useSignupRequest,
+  useVerifyAcademy,
+  useVerifyEmail,
 } from "../../api/generated/edutrack";
 
 type Step = "REQUEST" | "EMAIL" | "ACADEMY" | "COMPLETE";
@@ -171,8 +171,14 @@ export default function Signup() {
       return;
     }
 
+    const token = signupToken || sessionStorage.getItem("signupToken");
+    if (!token) {
+      alert("가입 토큰을 찾을 수 없습니다. 다시 가입요청을 해주세요.");
+      return;
+    }
+
     await sendEmailMut.mutateAsync(
-      { data: { email: form.email } as any },
+      { data: { signupToken: token } as any },
       withSignupToken()
     );
 
@@ -189,11 +195,17 @@ export default function Signup() {
   const handleVerifyEmail = async () => {
     if (!canVerifyEmail) return;
 
+    const token = signupToken || sessionStorage.getItem("signupToken");
+    if (!token) {
+      alert("가입 토큰을 찾을 수 없습니다. 다시 가입요청을 해주세요.");
+      return;
+    }
+
     await verifyEmailMut.mutateAsync(
       {
         data: {
-          email: form.email,
-          token: emailCode,
+          signupToken: token,
+          inputCode: emailCode,
         } as any,
       },
       withSignupToken()
@@ -218,8 +230,14 @@ export default function Signup() {
   const handleVerifyAcademy = async () => {
     if (!canVerifyAcademy) return;
 
+    const token = signupToken || sessionStorage.getItem("signupToken");
+    if (!token) {
+      alert("가입 토큰을 찾을 수 없습니다. 다시 가입요청을 해주세요.");
+      return;
+    }
+
     await verifyAcademyMut.mutateAsync(
-      { data: { academyCode: form.academyCode } as any },
+      { data: { signupToken: token, academyCode: form.academyCode } as any },
       withSignupToken()
     );
 
@@ -250,16 +268,15 @@ export default function Signup() {
   const handleCompleteSignup = async () => {
     if (!canComplete) return;
 
+    const token = signupToken || sessionStorage.getItem("signupToken");
+    if (!token) {
+      alert("가입 토큰을 찾을 수 없습니다. 다시 가입요청을 해주세요.");
+      return;
+    }
+
     await completeSignupMut.mutateAsync(
       {
-        data: {
-          academyCode: form.academyCode,
-          loginId: form.loginId,
-          password: form.password,
-          name: form.name,
-          phone: form.phone,
-          email: form.email,
-        } as any,
+        data: { signupToken: token } as any,
       },
       withSignupToken()
     );
