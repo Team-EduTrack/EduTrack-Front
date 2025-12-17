@@ -59,7 +59,7 @@ export default function AppRouter() {
           element={<StudentDetail />}
         />
         <Route
-          path="/teacher/assignments/:assignmentId"
+          path="/teacher/assignments/:assignmentId/submissions/:submissionId"
           element={<AssignmentGrading />}
         />
         <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />

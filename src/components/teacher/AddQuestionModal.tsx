@@ -5,6 +5,7 @@ import Button from "../common/Button";
 interface QuestionData {
   id: number;
   unit: string;
+  unitId: number;
   answer: number;
   score: number;
   difficulty: "상" | "중" | "하";
@@ -68,6 +69,7 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
     onAdd({
       id: Date.now(),
       unit: units.find((u) => u.value === unit)?.label || unit,
+      unitId: Number(unit),
       answer,
       score,
       difficulty,
@@ -87,7 +89,7 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="문제 추가" size="lg">
       <div className="space-y-5">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
               단원 선택

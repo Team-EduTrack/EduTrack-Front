@@ -1,15 +1,26 @@
 import { useState } from "react";
-import { FiCalendar, FiPlus } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { FiPlus } from "react-icons/fi";
 import Page from "../../components/common/Page";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import AddQuestionModal from "../../components/teacher/AddQuestionModal";
+import { authState } from "../../stores/authStore";
+import {
+  useTeacherLectures,
+  useCreateExam,
+  useCreateAssignment,
+  useRegisterQuestions,
+} from "../../hooks/teacher";
+import type { QuestionRegistrationRequest } from "../../api/generated/edutrack";
 
 type TabType = "exam" | "assignment";
 
 interface Question {
   id: number;
   unit: string;
+  unitId: number;
   answer: number;
   score: number;
   difficulty: "상" | "중" | "하";
@@ -17,37 +28,121 @@ interface Question {
   options: string[];
 }
 
-const mockLectures = [
-  { id: 1, name: "재미있는 영어" },
-  { id: 2, name: "영문법 수업" },
-  { id: 3, name: "보카 독파" },
-];
-
 export default function ExamManagement() {
+  const navigate = useNavigate();
+  const auth = useRecoilValue(authState);
+  const academyId = auth.user?.academy?.id ?? 0;
+
+  const { lectures, isLoading: isLoadingLectures } = useTeacherLectures();
+  const { createExam, isPending: isCreatingExam } = useCreateExam();
+  const { createAssignment, isPending: isCreatingAssignment } =
+    useCreateAssignment();
+  const { registerQuestions, isPending: isRegisteringQuestions } =
+    useRegisterQuestions();
+
   const [activeTab, setActiveTab] = useState<TabType>("exam");
-  const [selectedLecture, setSelectedLecture] = useState(mockLectures[0].id);
+  const [selectedLecture, setSelectedLecture] = useState<number>(0);
   const [examName, setExamName] = useState("");
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [duration, setDuration] = useState("60");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
+  // 첫 번째 강의 선택
+  useState(() => {
+    if (lectures.length > 0 && selectedLecture === 0) {
+      setSelectedLecture(lectures[0].lectureId ?? 0);
+    }
+  });
+
   const selectedLectureName =
-    mockLectures.find((l) => l.id === selectedLecture)?.name || "";
+    lectures.find((l) => l.lectureId === selectedLecture)?.title || "";
   const isExam = activeTab === "exam";
+  const isSubmitting = isCreatingExam || isCreatingAssignment || isRegisteringQuestions;
 
   const handleAddQuestion = (question: Question) => {
     setQuestions((prev) => [...prev, question]);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isExam) {
-      alert(`시험이 생성되었습니다: ${examName}\n문제 수: ${questions.length}`);
-    } else {
-      alert(`과제가 생성되었습니다: ${examName}`);
+
+    if (!selectedLecture) {
+      alert("강의를 선택해주세요.");
+      return;
+    }
+
+    if (!examName.trim()) {
+      alert(isExam ? "시험명을 입력해주세요." : "과제명을 입력해주세요.");
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      alert("기간을 설정해주세요.");
+      return;
+    }
+
+    try {
+      if (isExam) {
+        // 시험 생성
+        const examResult = await createExam({
+          lectureId: selectedLecture,
+          data: {
+            title: examName,
+            description: assignmentDescription || undefined,
+            startTime: new Date(startDate).toISOString(),
+            endTime: new Date(endDate).toISOString(),
+          },
+        });
+
+        const examId = examResult.data?.examId;
+
+        // 문제 등록
+        if (examId && questions.length > 0) {
+          const questionRequests: QuestionRegistrationRequest[] = questions.map(
+            (q) => ({
+              questionText: q.question,
+              choices: q.options,
+              correctAnswerIndex: q.answer - 1, // 0-based index
+              difficulty:
+                q.difficulty === "상"
+                  ? "HARD"
+                  : q.difficulty === "중"
+                    ? "MEDIUM"
+                    : "EASY",
+              unitId: q.unitId || 1,
+            })
+          );
+
+          await registerQuestions({
+            lectureId: selectedLecture,
+            examId,
+            data: questionRequests,
+          });
+        }
+
+        alert("시험이 생성되었습니다.");
+      } else {
+        // 과제 생성
+        await createAssignment({
+          academyId,
+          lectureId: selectedLecture,
+          data: {
+            lectureId: selectedLecture,
+            title: examName,
+            description: assignmentDescription || undefined,
+            dueDate: new Date(endDate).toISOString(),
+          },
+        });
+
+        alert("과제가 생성되었습니다.");
+      }
+
+      navigate(-1);
+    } catch (error) {
+      console.error("Failed to create:", error);
+      alert(isExam ? "시험 생성에 실패했습니다." : "과제 생성에 실패했습니다.");
     }
   };
 
@@ -60,6 +155,16 @@ export default function ExamManagement() {
 
   const radioClass = (isActive: boolean) =>
     `w-4 h-4 rounded-full border-2 ${isActive ? "bg-white border-white" : "border-gray-400"}`;
+
+  if (isLoadingLectures) {
+    return (
+      <Page>
+        <div className="flex justify-center items-center h-64">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      </Page>
+    );
+  }
 
   return (
     <Page>
@@ -87,17 +192,22 @@ export default function ExamManagement() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 강의 선택
               </label>
-              <select
-                className="select select-bordered w-full max-w-md bg-white"
-                value={selectedLecture}
-                onChange={(e) => setSelectedLecture(Number(e.target.value))}
-              >
-                {mockLectures.map((lecture) => (
-                  <option key={lecture.id} value={lecture.id}>
-                    {lecture.name}
-                  </option>
-                ))}
-              </select>
+              {lectures.length === 0 ? (
+                <p className="text-sm text-gray-500">등록된 강의가 없습니다.</p>
+              ) : (
+                <select
+                  className="select select-bordered w-full max-w-md bg-white"
+                  value={selectedLecture}
+                  onChange={(e) => setSelectedLecture(Number(e.target.value))}
+                >
+                  <option value={0}>강의를 선택하세요</option>
+                  {lectures.map((lecture) => (
+                    <option key={lecture.lectureId} value={lecture.lectureId}>
+                      {lecture.title}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
@@ -131,19 +241,18 @@ export default function ExamManagement() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {isExam ? "응시 기간" : "제출 기간"}
               </label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded whitespace-nowrap">
                     시작
                   </span>
                   <div className="relative">
                     <input
-                      type="date"
-                      className="input input-bordered bg-white pr-10"
+                      type="datetime-local"
+                      className="input input-bordered bg-white"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
-                    <FiCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -152,29 +261,13 @@ export default function ExamManagement() {
                   </span>
                   <div className="relative">
                     <input
-                      type="date"
-                      className="input input-bordered bg-white pr-10"
+                      type="datetime-local"
+                      className="input input-bordered bg-white"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
-                    <FiCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
-                {isExam && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded whitespace-nowrap">
-                      시간
-                    </span>
-                    <select
-                      className="select select-bordered bg-white"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                    >
-                      <option value="30">30 분</option>
-                      <option value="60">60 분</option>
-                    </select>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -250,7 +343,13 @@ export default function ExamManagement() {
             )}
 
             <div className="flex justify-end pt-4">
-              <Button type="submit">{isExam ? "시험 생성" : "과제 생성"}</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? "생성 중..."
+                  : isExam
+                    ? "시험 생성"
+                    : "과제 생성"}
+              </Button>
             </div>
           </form>
         </Card>
