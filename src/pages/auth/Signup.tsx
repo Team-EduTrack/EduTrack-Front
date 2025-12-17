@@ -64,7 +64,7 @@ export default function Signup() {
 
   const handleSendEmailVerification = async () => {
     try {
-      await axios.post("/api/auth/signup", {
+      await axios.post("/api/auth/signup/request", {
         academyCode: form.academyCode,
         loginId: form.loginId,
         password: form.password,
@@ -86,7 +86,7 @@ export default function Signup() {
 
   const handleSignup = async () => {
     try {
-      const res = await axios.post("/api/auth/signup", {
+      const res = await axios.post("/api/auth/signup/complete", {
         academyCode: form.academyCode,
         loginId: form.loginId,
         password: form.password,

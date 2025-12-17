@@ -45,17 +45,13 @@ export default function EmailInput({
         token: authCode,
       });
 
-      await axios.post("/api/auth/signup/complete", {
-        email: value,
-        token: authCode,
-      });
-
       setIsAuthValid(true);
       onVerified();
     } catch (err: any) {
       alert(err.response?.data?.message || "인증 실패");
     }
   };
+
   return (
     <fieldset className="fieldset">
       <legend className="fieldset-legend">
