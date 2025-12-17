@@ -5,108 +5,113 @@ import Page from "../../components/common/Page";
 import ReusablePieChart from "../../components/common/PieChart";
 import Table from "../../components/common/Table";
 import UserModal from "../../components/common/principal/UserModal";
+import { useRecoilValue } from "recoil";
+import { authState } from "../../stores/authStore";
+import { usePrincipalUsers } from "../../hooks/principal/usePrincipalUsers";
+import { useSearchUsers } from "../../api/generated/edutrack";
 
-const mockUsersNumber = {
-  totalUsers: 57,
-  countTeacher: 10,
-  countStudent: 47,
+type UiUserRow = {
+  id: number;
+  name: string;
+  userType: string;
+  userId: string;
+  phone: string;
 };
 
-const mockUsers = [
-  {
-    id: 1,
-    name: "김은아",
-    userType: "강사",
-    userId: "adk123",
-    phone: "01093489203",
-    email: "ask938@nd.com",
-    profileImage: null,
-  },
-  {
-    id: 2,
-    name: "김아현",
-    userType: "학생",
-    userId: "adk33",
-    phone: "01093989203",
-    email: "aii998@nd.com",
-    profileImage: null,
-  },
-  {
-    id: 3,
-    name: "김은지",
-    userType: "강사",
-    userId: "adk5623",
-    phone: "01093489298",
-    email: "nkk091@nd.com",
-    profileImage: null,
-  },
-];
-
 export default function PrincipalUserManagement() {
+  const auth = useRecoilValue(authState);
+  const academyId = auth.user?.academy?.id;
+
   const [userList, setUserList] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedType, setSelectedType] = useState<"" | "강사" | "학생">("");
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  const [users, setUsers] = useState(mockUsers);
+  const [selectedUser, setSelectedUser] = useState<UiUserRow | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+
+  const { data: teachersAllRes } = useSearchUsers(
+    academyId ?? 0,
+    { role: "TEACHER" },
+    { query: { enabled: !!academyId } }
+  );
+
+  const { data: studentsAllRes } = useSearchUsers(
+    academyId ?? 0,
+    { role: "STUDENT" },
+    { query: { enabled: !!academyId } }
+  );
+
+  const teacherCount = teachersAllRes?.data?.length ?? 0;
+  const studentCount = studentsAllRes?.data?.length ?? 0;
+  const totalUsers = teacherCount + studentCount;
+
+  const usersNumber = {
+    totalUsers,
+    countTeacher: teacherCount,
+    countStudent: studentCount,
+  };
+
+  const role =
+    selectedType === "강사"
+      ? "TEACHER"
+      : selectedType === "학생"
+      ? "STUDENT"
+      : "";
+
+  const { users, refetch } = usePrincipalUsers(academyId, {
+    enabled: userList,
+    role,
+    keyword: searchText,
+  });
 
   const handleSearch = () => {
     setUserList(true);
+    refetch();
   };
 
+  const filteredUsers: UiUserRow[] = (userList ? users : []).map((u) => ({
+    id: u.id ?? 0,
+    name: u.name ?? "-",
+    userType:
+      u.role === "TEACHER"
+        ? "강사"
+        : u.role === "STUDENT"
+        ? "학생"
+        : u.role ?? "-",
+    userId: u.loginId ?? "-",
+    phone: u.phone ?? "-",
+  }));
+
   const handleSelectUser = (userId: number, checked: boolean) => {
-    if (checked) {
-      setSelectedUserIds((prev) => [...prev, userId]);
-    } else {
-      setSelectedUserIds((prev) => prev.filter((id) => id !== userId));
-    }
+    if (checked) setSelectedUserIds((prev) => [...prev, userId]);
+    else setSelectedUserIds((prev) => prev.filter((id) => id !== userId));
   };
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedUserIds(filteredUsers.map((u) => u.id));
-    } else {
-      setSelectedUserIds([]);
-    }
+    if (checked) setSelectedUserIds(filteredUsers.map((u) => u.id));
+    else setSelectedUserIds([]);
   };
 
   const handleDeleteUsers = () => {
     if (selectedUserIds.length === 0)
       return alert("삭제할 회원을 선택해주세요.");
-
     if (!confirm("선택한 회원을 삭제하시겠습니까?")) return;
 
-    setUsers((prev) => prev.filter((u) => !selectedUserIds.includes(u.id)));
-    setSelectedUserIds([]); // 선택 초기화
+    alert("삭제 API가 아직 없어서 서버에서 삭제할 수 없습니다.");
+    setSelectedUserIds([]);
   };
 
-  const handleUpdateUserType = (updatedUser) => {
-    setUsers((prev) =>
-      prev.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-    );
+  const handleUpdateUserType = () => {
     setSelectedUser(null);
     setIsModalOpen(false);
   };
 
-  let filteredUsers = [];
-
-  if (userList) {
-    filteredUsers = users;
-
-    if (selectedType) {
-      filteredUsers = filteredUsers.filter(
-        (user) => user.userType === selectedType
-      );
-    }
-
-    if (searchText.trim() !== "") {
-      const keyword = searchText.trim();
-
-      filteredUsers = filteredUsers.filter(
-        (user) => user.userId.includes(keyword) || user.phone.includes(keyword)
-      );
-    }
+  if (!academyId) {
+    return (
+      <Page>
+        <Card className="p-8">학원 정보가 없습니다.</Card>
+      </Page>
+    );
   }
 
   return (
@@ -114,30 +119,22 @@ export default function PrincipalUserManagement() {
       <Card className="flex mb-4">
         <div className="stat">
           <div className="stat-title">전체 회원 수</div>
-          <div className="stat-value text-5xl">
-            {mockUsersNumber.totalUsers}
-          </div>
+          <div className="stat-value text-5xl">{usersNumber.totalUsers}</div>
         </div>
         <div className="stat">
           <div className="stat-title">강사</div>
-          <div className="stat-value text-5xl">
-            {mockUsersNumber.countTeacher}
-          </div>
+          <div className="stat-value text-5xl">{usersNumber.countTeacher}</div>
         </div>
         <div className="stat">
           <div className="stat-title">학생</div>
-          <div className="stat-value text-5xl">
-            {mockUsersNumber.countStudent}
-          </div>
+          <div className="stat-value text-5xl">{usersNumber.countStudent}</div>
         </div>
+
         <div className="w-full h-32">
           <ReusablePieChart
             data={[
-              {
-                name: "학생",
-                value: mockUsersNumber.countStudent,
-              },
-              { name: "강사", value: mockUsersNumber.countTeacher },
+              { name: "학생", value: usersNumber.countStudent },
+              { name: "강사", value: usersNumber.countTeacher },
             ]}
           />
         </div>
@@ -158,6 +155,7 @@ export default function PrincipalUserManagement() {
             <option value="강사">강사</option>
             <option value="학생">학생</option>
           </select>
+
           <input
             type="text"
             placeholder="아이디 또는 전화번호를 입력해주세요"
@@ -165,15 +163,18 @@ export default function PrincipalUserManagement() {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
+
           <Button type="submit" onClick={handleSearch}>
             검색
           </Button>
         </div>
       </Card>
+
       <Card>
         <div className="flex justify-end mb-4">
           <Button onClick={handleDeleteUsers}>삭제</Button>
         </div>
+
         <Table
           columns={[
             {
@@ -188,7 +189,7 @@ export default function PrincipalUserManagement() {
                   onChange={(e) => handleSelectAll(e.target.checked)}
                 />
               ),
-              accessor: (user) => (
+              accessor: (user: UiUserRow) => (
                 <input
                   type="checkbox"
                   className="checkbox checkbox-sm"
@@ -200,7 +201,7 @@ export default function PrincipalUserManagement() {
             },
             {
               header: "이름",
-              accessor: (user) => (
+              accessor: (user: UiUserRow) => (
                 <button
                   className="text-gray-700 hover:text-gray-900 hover:underline"
                   onClick={() => {
@@ -212,29 +213,29 @@ export default function PrincipalUserManagement() {
                 </button>
               ),
             },
-            {
-              header: "회원 유형",
-              accessor: "userType",
-            },
-            {
-              header: "아이디",
-              accessor: "userId",
-            },
-            {
-              header: "전화번호",
-              accessor: "phone",
-            },
+            { header: "회원 유형", accessor: "userType" },
+            { header: "아이디", accessor: "userId" },
+            { header: "전화번호", accessor: "phone" },
           ]}
           data={filteredUsers}
-          keyExtractor={(row) => row.id}
-        ></Table>
+          keyExtractor={(row: UiUserRow) => row.id}
+          emptyMessage={
+            userList ? "검색 결과가 없습니다." : "검색을 실행해주세요."
+          }
+        />
       </Card>
+
       {selectedUser && (
         <UserModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
+          academyId={academyId!}
           user={selectedUser}
-          onSave={handleUpdateUserType}
+          onSaved={() => {
+            setIsModalOpen(false);
+            setSelectedUser(null);
+            refetch();
+          }}
         />
       )}
     </Page>
