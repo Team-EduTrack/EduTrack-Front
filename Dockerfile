@@ -16,6 +16,9 @@ COPY . .
 ARG VITE_API_URL=http://localhost:8080
 ENV VITE_API_URL=$VITE_API_URL
 
+# Generate TypeScript types from OpenAPI spec
+RUN npm run orval:gen
+
 # Build application (타입 체크 건너뛰고 vite build만 실행)
 RUN npx vite build
 

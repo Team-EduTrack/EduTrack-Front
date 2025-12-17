@@ -1,19 +1,17 @@
 import { useMemo, useState } from "react";
 import { FiCalendar } from "react-icons/fi";
-import Button from "../Button";
-import FormInput from "../Input";
-import Modal from "../Modal";
 import {
   useCreateLecture,
   useSearchUsers,
-  LectureCreationRequestDaysOfWeekItem,
   type LectureCreationRequest,
-  type UserSearchResultResponse,
   type SearchUsersParams,
+  type UserSearchResultResponse,
 } from "../../../api/generated/edutrack";
+import Button from "../Button";
+import FormInput from "../Input";
+import Modal from "../Modal";
 
-type DayEnum =
-  (typeof LectureCreationRequestDaysOfWeekItem)[keyof typeof LectureCreationRequestDaysOfWeekItem];
+type DayOfWeek = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
 
 interface Props {
   isOpen: boolean;
@@ -22,14 +20,14 @@ interface Props {
   academyId: number; // ✅ 추가: 사용자 검색에 필요
 }
 
-const dayLabelToEnum: Record<string, DayEnum> = {
-  월: LectureCreationRequestDaysOfWeekItem.MONDAY,
-  화: LectureCreationRequestDaysOfWeekItem.TUESDAY,
-  수: LectureCreationRequestDaysOfWeekItem.WEDNESDAY,
-  목: LectureCreationRequestDaysOfWeekItem.THURSDAY,
-  금: LectureCreationRequestDaysOfWeekItem.FRIDAY,
-  토: LectureCreationRequestDaysOfWeekItem.SATURDAY,
-  일: LectureCreationRequestDaysOfWeekItem.SUNDAY,
+const dayLabelToEnum: Record<string, DayOfWeek> = {
+  월: "MONDAY",
+  화: "TUESDAY",
+  수: "WEDNESDAY",
+  목: "THURSDAY",
+  금: "FRIDAY",
+  토: "SATURDAY",
+  일: "SUNDAY",
 };
 
 // ✅ 응답이 프로젝트마다 필드명이 조금씩 달라서 안전하게 꺼내는 헬퍼
@@ -101,8 +99,8 @@ export default function MakeLectureModal({
     onClose();
   };
 
-  const daysOfWeek: DayEnum[] = useMemo(() => {
-    return days.map((d) => dayLabelToEnum[d]).filter(Boolean);
+  const daysOfWeek: DayOfWeek[] = useMemo(() => {
+    return days.map((d) => dayLabelToEnum[d]).filter((day): day is DayOfWeek => day !== undefined);
   }, [days]);
 
   // ✅ SearchUsersParams 필드명은 프로젝트마다 다를 수 있어서 최소 키워드만 사용
@@ -210,13 +208,19 @@ export default function MakeLectureModal({
       return;
     }
 
-    const payload: LectureCreationRequest = {
+    const payload: LectureCreationRequest & {
+      teacherId: number;
+      daysOfWeek: DayOfWeek[];
+    } = {
       title: name.trim(),
       description: description.trim() ? description.trim() : null,
       teacherId: Number(teacherId),
       daysOfWeek,
       startDate: toLocalDateTimeStart(startDate),
       endDate: toLocalDateTimeEnd(endDate),
+    } as LectureCreationRequest & {
+      teacherId: number;
+      daysOfWeek: DayOfWeek[];
     };
 
     try {
