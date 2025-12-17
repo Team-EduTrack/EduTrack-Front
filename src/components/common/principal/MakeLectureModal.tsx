@@ -10,8 +10,17 @@ import {
 import Button from "../Button";
 import FormInput from "../Input";
 import Modal from "../Modal";
+import {
+  useCreateLecture,
+  useSearchUsers,
+  LectureCreationRequestDaysOfWeekItem,
+  type LectureCreationRequest,
+  type UserSearchResultResponse,
+  type SearchUsersParams,
+} from "../../../api/generated/edutrack";
 
-type DayOfWeek = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+type DayEnum =
+  (typeof LectureCreationRequestDaysOfWeekItem)[keyof typeof LectureCreationRequestDaysOfWeekItem];
 
 interface Props {
   isOpen: boolean;
@@ -20,14 +29,14 @@ interface Props {
   academyId: number; // ✅ 추가: 사용자 검색에 필요
 }
 
-const dayLabelToEnum: Record<string, DayOfWeek> = {
-  월: "MONDAY",
-  화: "TUESDAY",
-  수: "WEDNESDAY",
-  목: "THURSDAY",
-  금: "FRIDAY",
-  토: "SATURDAY",
-  일: "SUNDAY",
+const dayLabelToEnum: Record<string, DayEnum> = {
+  월: LectureCreationRequestDaysOfWeekItem.MONDAY,
+  화: LectureCreationRequestDaysOfWeekItem.TUESDAY,
+  수: LectureCreationRequestDaysOfWeekItem.WEDNESDAY,
+  목: LectureCreationRequestDaysOfWeekItem.THURSDAY,
+  금: LectureCreationRequestDaysOfWeekItem.FRIDAY,
+  토: LectureCreationRequestDaysOfWeekItem.SATURDAY,
+  일: LectureCreationRequestDaysOfWeekItem.SUNDAY,
 };
 
 // ✅ 응답이 프로젝트마다 필드명이 조금씩 달라서 안전하게 꺼내는 헬퍼
@@ -99,8 +108,8 @@ export default function MakeLectureModal({
     onClose();
   };
 
-  const daysOfWeek: DayOfWeek[] = useMemo(() => {
-    return days.map((d) => dayLabelToEnum[d]).filter((day): day is DayOfWeek => day !== undefined);
+  const daysOfWeek: DayEnum[] = useMemo(() => {
+    return days.map((d) => dayLabelToEnum[d]).filter(Boolean);
   }, [days]);
 
   // ✅ SearchUsersParams 필드명은 프로젝트마다 다를 수 있어서 최소 키워드만 사용
@@ -208,19 +217,13 @@ export default function MakeLectureModal({
       return;
     }
 
-    const payload: LectureCreationRequest & {
-      teacherId: number;
-      daysOfWeek: DayOfWeek[];
-    } = {
+    const payload: LectureCreationRequest = {
       title: name.trim(),
       description: description.trim() ? description.trim() : null,
       teacherId: Number(teacherId),
       daysOfWeek,
       startDate: toLocalDateTimeStart(startDate),
       endDate: toLocalDateTimeEnd(endDate),
-    } as LectureCreationRequest & {
-      teacherId: number;
-      daysOfWeek: DayOfWeek[];
     };
 
     try {
