@@ -272,9 +272,6 @@ export default function Signup() {
     navigate("/login");
   };
 
-  // -------------------------
-  // UI
-  // -------------------------
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full p-6 max-w-lg bg-white shadow-lg rounded-lg space-y-4">
