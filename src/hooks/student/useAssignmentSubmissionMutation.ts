@@ -19,7 +19,6 @@ export function useSubmitAssignmentMutation() {
     mutationFn: async ({ academyId, assignmentId, content, file }: SubmitArgs) => {
       let fileKey: string | undefined;
 
-      // 1) 파일 있으면 presigned-url 발급 + S3 PUT 업로드
       if (file) {
         const presignedReq: PresignedUrlRequest = {
           fileName: file.name,
@@ -34,16 +33,14 @@ export function useSubmitAssignmentMutation() {
         const { url, fileKey: issuedFileKey } = presignedRes.data;
         fileKey = issuedFileKey;
 
-        // presigned URL로 실제 업로드 (PUT)
         await axios.put(url!, file, {
           headers: { "Content-Type": file.type },
         });
       }
 
-      // 2) 제출 API 호출 (백엔드가 fileKey 저장)
       const submitReq: AssignmentSubmitRequest = {
-        fileKey,          // 파일 없으면 undefined (백엔드가 허용해야 함)
-        comment: content, // 네 content를 comment로 매핑
+        fileKey,         
+        comment: content, 
       };
 
       const res = await axios.post<AssignmentSubmitResponse>(
@@ -55,5 +52,5 @@ export function useSubmitAssignmentMutation() {
     },
   });
 
-  return mutation; // { mutate, mutateAsync, isPending, ... }
+  return mutation;
 }

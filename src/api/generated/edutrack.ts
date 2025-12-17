@@ -81,6 +81,7 @@ export interface UserSearchResultResponse {
   name?: string;
   loginId?: string;
   phone?: string;
+  email?: string;
   role?: string;
 }
 
@@ -130,6 +131,16 @@ export interface LectureForTeacherResponse {
   lectureId?: number;
   title?: string;
   studentCount?: number;
+  /**
+   * 강사명 (원장 조회 시 포함, 선생님 본인 조회 시 null)
+   * @nullable
+   */
+  teacherName?: string | null;
+  /**
+   * 평균 점수
+   * @nullable
+   */
+  averageGrade?: number | null;
 }
 
 export type LectureDetailForTeacherResponseAllOf = {
@@ -856,13 +867,13 @@ export function useGetMyInfo<TData = Awaited<ReturnType<typeof getMyInfo>>, TErr
 /**
  * @summary 회원가입
  */
-export const signup = (
+export const signupRequest = (
     signupRequest: SignupRequest, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<string>> => {
     
     
     return axios.default.post(
-      `/api/auth/signup`,
+      `/api/auth/signup/request`,
       signupRequest,{
     ...options,}
     );
@@ -870,11 +881,11 @@ export const signup = (
 
 
 
-export const getSignupMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signup>>, TError,{data: SignupRequest}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof signup>>, TError,{data: SignupRequest}, TContext> => {
+export const getSignupRequestMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signupRequest>>, TError,{data: SignupRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof signupRequest>>, TError,{data: SignupRequest}, TContext> => {
 
-const mutationKey = ['signup'];
+const mutationKey = ['signupRequest'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -884,10 +895,10 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signup>>, {data: SignupRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signupRequest>>, {data: SignupRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  signup(data,axiosOptions)
+          return  signupRequest(data,axiosOptions)
         }
 
         
@@ -895,23 +906,23 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SignupMutationResult = NonNullable<Awaited<ReturnType<typeof signup>>>
-    export type SignupMutationBody = SignupRequest
-    export type SignupMutationError = AxiosError<unknown>
+    export type SignupRequestMutationResult = NonNullable<Awaited<ReturnType<typeof signupRequest>>>
+    export type SignupRequestMutationBody = SignupRequest
+    export type SignupRequestMutationError = AxiosError<unknown>
 
     /**
  * @summary 회원가입
  */
-export const useSignup = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signup>>, TError,{data: SignupRequest}, TContext>, axios?: AxiosRequestConfig}
+export const useSignupRequest = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signupRequest>>, TError,{data: SignupRequest}, TContext>, axios?: AxiosRequestConfig}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof signup>>,
+        Awaited<ReturnType<typeof signupRequest>>,
         TError,
         {data: SignupRequest},
         TContext
       > => {
 
-      const mutationOptions = getSignupMutationOptions(options);
+      const mutationOptions = getSignupRequestMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
@@ -1043,24 +1054,87 @@ export const useVerifyEmail = <TError = AxiosError<unknown>,
     }
     
 /**
+ * @summary 학원 코드 인증
+ */
+export const verifyAcademy = (
+    academyVerifyRequest: AcademyVerifyRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<string>> => {
+    
+    
+    return axios.default.post(
+      `/api/auth/academy-verify`,
+      academyVerifyRequest,{
+    ...options,}
+    );
+  }
+
+
+
+export const getVerifyAcademyMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyAcademy>>, TError,{data: AcademyVerifyRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyAcademy>>, TError,{data: AcademyVerifyRequest}, TContext> => {
+
+const mutationKey = ['verifyAcademy'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyAcademy>>, {data: AcademyVerifyRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  verifyAcademy(data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyAcademyMutationResult = NonNullable<Awaited<ReturnType<typeof verifyAcademy>>>
+    export type VerifyAcademyMutationBody = AcademyVerifyRequest
+    export type VerifyAcademyMutationError = AxiosError<unknown>
+
+    /**
+ * @summary 학원 코드 인증
+ */
+export const useVerifyAcademy = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyAcademy>>, TError,{data: AcademyVerifyRequest}, TContext>, axios?: AxiosRequestConfig}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyAcademy>>,
+        TError,
+        {data: AcademyVerifyRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getVerifyAcademyMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
  * @summary 최종 회원가입 완료
  */
 export const completeSignup = (
-    verifyEmailRequest: VerifyEmailRequest, options?: AxiosRequestConfig
+    completeSignupRequest: CompleteSignupRequest, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<SignupResponse>> => {
     
     
     return axios.default.post(
       `/api/auth/signup/complete`,
-      verifyEmailRequest,options
+      completeSignupRequest,options
     );
   }
 
 
 
 export const getCompleteSignupMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: VerifyEmailRequest}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: VerifyEmailRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: CompleteSignupRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: CompleteSignupRequest}, TContext> => {
 
 const mutationKey = ['completeSignup'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
@@ -1072,7 +1146,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeSignup>>, {data: VerifyEmailRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeSignup>>, {data: CompleteSignupRequest}> = (props) => {
           const {data} = props ?? {};
 
           return  completeSignup(data,axiosOptions)
@@ -1084,18 +1158,18 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CompleteSignupMutationResult = NonNullable<Awaited<ReturnType<typeof completeSignup>>>
-    export type CompleteSignupMutationBody = VerifyEmailRequest
+    export type CompleteSignupMutationBody = CompleteSignupRequest
     export type CompleteSignupMutationError = AxiosError<unknown>
 
     /**
  * @summary 최종 회원가입 완료
  */
 export const useCompleteSignup = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: VerifyEmailRequest}, TContext>, axios?: AxiosRequestConfig}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSignup>>, TError,{data: CompleteSignupRequest}, TContext>, axios?: AxiosRequestConfig}
  ): UseMutationResult<
         Awaited<ReturnType<typeof completeSignup>>,
         TError,
-        {data: VerifyEmailRequest},
+        {data: CompleteSignupRequest},
         TContext
       > => {
 
