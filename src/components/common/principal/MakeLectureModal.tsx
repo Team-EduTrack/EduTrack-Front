@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
 import { FiCalendar } from "react-icons/fi";
+import {
+  useCreateLecture,
+  useSearchUsers,
+  type LectureCreationRequest,
+  type SearchUsersParams,
+  type UserSearchResultResponse,
+} from "../../../api/generated/edutrack";
 import Button from "../Button";
 import FormInput from "../Input";
 import Modal from "../Modal";
