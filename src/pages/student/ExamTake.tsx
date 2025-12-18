@@ -6,7 +6,7 @@ import Button from "../../components/common/Button";
 import { useEffect, useState } from "react";
 import StatBox from "../../components/common/StatBox";
 import {
-  useGetExamDetail,
+  ExamStartResponse,
   useSaveAnswers,
   useStartExam,
   useSubmitExam,
@@ -18,15 +18,14 @@ export default function ExamTakePage() {
     lectureId: string;
     examId: string;
   }>();
-  const { data: examDetail, isError } = useGetExamDetail(
-    Number(lectureId),
-    Number(examId)
-  );
   const { lectures } = useMyLectures();
 
   const lectureDetail = lectures.find((l) => l.lectureId === Number(lectureId));
 
   const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
+  const [examData, setExamData] = useState<ExamStartResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
   const startExamMutation = useStartExam();
   const saveAnswersMutation = useSaveAnswers();
@@ -36,7 +35,19 @@ export default function ExamTakePage() {
 
   useEffect(() => {
     if (examId) {
-      startExamMutation.mutate({ examId: Number(examId) });
+      startExamMutation.mutate(
+        { examId: Number(examId) },
+        {
+          onSuccess: (response) => {
+            setExamData(response.data);
+            setIsLoading(false);
+          },
+          onError: () => {
+            setIsError(true);
+            setIsLoading(false);
+          },
+        }
+      );
     }
   }, [examId]);
 
@@ -76,7 +87,9 @@ export default function ExamTakePage() {
     );
   };
 
-  if (isError || !examDetail)
+  if (isLoading) return <Page>시험 데이터를 불러오는 중...</Page>;
+
+  if (isError || !examData)
     return <Page>시험 데이터를 불러오지 못했습니다.</Page>;
 
   return (
@@ -87,16 +100,14 @@ export default function ExamTakePage() {
         <div className="grid grid-cols-3 gap-4 p-6 space-y-3 sticky top-0 bg-white z-20 shadow-md rounded-lg">
           <StatBox label="강의명">{lectureDetail?.lectureTitle}</StatBox>
           <StatBox label="강사명">{lectureDetail?.teacherName}</StatBox>
-          <StatBox label="응시 시간">
-            {examDetail.data.durationMinute}분
-          </StatBox>
+          <StatBox label="응시 시간">{examData.durationMinute}분</StatBox>
         </div>
 
         <div className="space-y-6">
-          {examDetail.data.questions?.map((q) => (
+          {examData.questions?.map((q, index) => (
             <Card key={q.questionId} className="p-6 space-y-4">
               <h2 className="font-semibold text-lg">
-                {q.questionId}. {q.content}
+                {index + 1}. {q.content}
               </h2>
 
               <div className="space-y-2">
