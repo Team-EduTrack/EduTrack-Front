@@ -46,6 +46,7 @@ export default function ExamManagement() {
   const [assignmentDescription, setAssignmentDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [durationMinute, setDurationMinute] = useState<number>(30);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
@@ -91,8 +92,9 @@ export default function ExamManagement() {
           data: {
             title: examName,
             description: assignmentDescription || undefined,
-            startTime: new Date(startDate).toISOString(),
-            endTime: new Date(endDate).toISOString(),
+            startDate: new Date(startDate).toISOString(),
+            endDate: new Date(endDate).toISOString(),
+            durationMinute,
           },
         });
 
@@ -270,6 +272,25 @@ export default function ExamManagement() {
                 </div>
               </div>
             </div>
+
+            {isExam && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  응시 시간 (분)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={5}
+                    className="input input-bordered w-32 bg-white"
+                    value={durationMinute}
+                    onChange={(e) => setDurationMinute(Number(e.target.value))}
+                  />
+                  <span className="text-sm text-gray-600">분</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">최소 5분 이상 설정해주세요.</p>
+              </div>
+            )}
 
             {isExam && (
               <div>

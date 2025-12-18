@@ -1932,13 +1932,17 @@ components:
           type: string
         description:
           type: string
-        startTime:
+        startDate:
           type: string
           format: date-time
-        endTime:
+        endDate:
           type: string
           format: date-time
-      required: [title, startTime, endTime]
+        durationMinute:
+          type: integer
+          format: int32
+          minimum: 5
+      required: [title, startDate, endDate, durationMinute]
 
     ExamCreationResponse:
       type: object
