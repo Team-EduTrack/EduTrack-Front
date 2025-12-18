@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { AxiosError } from "axios";
 import { FiCalendar } from "react-icons/fi";
 import {
   useCreateLecture,
@@ -6,21 +7,25 @@ import {
   type LectureCreationRequest,
   type SearchUsersParams,
   type UserSearchResultResponse,
+  type LectureCreationRequestDaysOfWeekItem,
 } from "../../../api/generated/edutrack";
 import Button from "../Button";
 import FormInput from "../Input";
 import Modal from "../Modal";
+import { roleToKorean } from "../../../utils/role";
 
-type DayOfWeek = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+type DayOfWeek = LectureCreationRequestDaysOfWeekItem;
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
-  academyId: number; // ✅ 추가: 사용자 검색에 필요
+  academyId: number;
 }
 
-const dayLabelToEnum: Record<string, DayOfWeek> = {
+const DAYS = ["월", "화", "수", "목", "금", "토", "일"] as const;
+
+const DAY_MAP: Record<string, DayOfWeek> = {
   월: "MONDAY",
   화: "TUESDAY",
   수: "WEDNESDAY",
@@ -28,27 +33,6 @@ const dayLabelToEnum: Record<string, DayOfWeek> = {
   금: "FRIDAY",
   토: "SATURDAY",
   일: "SUNDAY",
-};
-
-// ✅ 응답이 프로젝트마다 필드명이 조금씩 달라서 안전하게 꺼내는 헬퍼
-const pickUserId = (u: any): number | null => {
-  const v = u?.userId ?? u?.id ?? u?.memberId ?? null;
-  return typeof v === "number" ? v : v != null ? Number(v) : null;
-};
-
-const pickUserName = (u: any): string => {
-  return (
-    u?.name ??
-    u?.userName ??
-    u?.loginId ??
-    u?.username ??
-    u?.userId ??
-    "이름없음"
-  );
-};
-
-const pickUserType = (u: any): string => {
-  return u?.userType ?? u?.role ?? u?.type ?? "";
 };
 
 export default function MakeLectureModal({
@@ -59,22 +43,16 @@ export default function MakeLectureModal({
 }: Props) {
   const createLecture = useCreateLecture();
 
-  // ✅ 네 디자인 그대로 state 유지
   const [name, setName] = useState("");
-  const [teacher, setTeacher] = useState(""); // 표시용(이름)
-  const [teacherId, setTeacherId] = useState<number | "">(""); // ✅ API 필수
+  const [teacher, setTeacher] = useState("");
+  const [teacherId, setTeacherId] = useState<number | "">("");
   const [description, setDescription] = useState("");
   const [days, setDays] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // ✅ 강사 검색 UI 상태
   const [teacherKeyword, setTeacherKeyword] = useState("");
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false);
-
-  // 서버가 LocalDateTime이면 이 포맷이 안전
-  const toLocalDateTimeStart = (d: string) => `${d}T00:00:00`;
-  const toLocalDateTimeEnd = (d: string) => `${d}T23:59:59`;
 
   const toggleDay = (day: string) => {
     setDays((prev) =>
@@ -99,76 +77,47 @@ export default function MakeLectureModal({
     onClose();
   };
 
-  const daysOfWeek: DayOfWeek[] = useMemo(() => {
-    return days.map((d) => dayLabelToEnum[d]).filter((day): day is DayOfWeek => day !== undefined);
+  const daysOfWeek = useMemo(() => {
+    return days.map((d) => DAY_MAP[d]).filter((d): d is DayOfWeek => !!d);
   }, [days]);
 
-  // ✅ SearchUsersParams 필드명은 프로젝트마다 다를 수 있어서 최소 키워드만 사용
-  //    만약 타입 에러 나면 keyword/name/loginId 등 실제 SearchUsersParams 정의에 맞춰 키만 바꿔주면 됨.
-  const searchParams = useMemo(() => {
-    const p: Partial<SearchUsersParams> = {
-      keyword: teacherKeyword,
-    };
-    return p as SearchUsersParams;
-  }, [teacherKeyword]);
+  const searchParams = useMemo(
+    () => ({ keyword: teacherKeyword }) as SearchUsersParams,
+    [teacherKeyword]
+  );
 
-  // ✅ 검색은 버튼 눌렀을 때만 (enabled: false + refetch)
-  const searchQuery = useSearchUsers(academyId, searchParams, {
-    query: { enabled: false },
-  });
+  const { data: searchData, isFetching, isError, refetch } = useSearchUsers(
+    academyId,
+    searchParams,
+    { query: { enabled: false } }
+  );
 
-  const teacherCandidatesRaw: UserSearchResultResponse[] =
-    (searchQuery.data?.data as any) ?? [];
+  const candidates = useMemo(() => {
+    const users = (searchData?.data ?? []) as UserSearchResultResponse[];
+    const teachers = users.filter((u) => u.role === "TEACHER");
+    return teachers.length > 0 ? teachers : users;
+  }, [searchData]);
 
-  // ✅ 강사만 필터(백엔드가 userType을 내려주면 여기서 걸러짐)
-  const teacherCandidates = useMemo(() => {
-    return teacherCandidatesRaw.filter((u: any) => {
-      const t = pickUserType(u);
-      // 흔한 케이스들
-      return (
-        t === "강사" ||
-        t === "TEACHER" ||
-        t === "teacher" ||
-        t === "ROLE_TEACHER"
-      );
-    }).length > 0
-      ? teacherCandidatesRaw.filter((u: any) => {
-          const t = pickUserType(u);
-          return (
-            t === "강사" ||
-            t === "TEACHER" ||
-            t === "teacher" ||
-            t === "ROLE_TEACHER"
-          );
-        })
-      : teacherCandidatesRaw; // userType이 없으면 전체 보여주고 선택하게
-  }, [teacherCandidatesRaw]);
-
-  const openTeacherPicker = async () => {
+  const openTeacherPicker = () => {
     setTeacherPickerOpen(true);
-    // 현재 입력된 teacher를 기본 키워드로
-    setTeacherKeyword((prev) => (prev.trim() ? prev : teacher.trim()));
-    // refetch는 teacherKeyword state 반영 후 호출되어야 해서 setTimeout 0
-    setTimeout(() => {
-      searchQuery.refetch();
-    }, 0);
+    setTeacherKeyword((prev) => prev.trim() || teacher.trim());
+    setTimeout(() => refetch(), 0);
   };
 
-  const selectTeacher = (u: any) => {
-    const id = pickUserId(u);
-    if (!id) {
+  const selectTeacher = (user: UserSearchResultResponse) => {
+    if (!user.id) {
       alert("선택한 사용자에서 teacherId를 찾지 못했습니다.");
       return;
     }
-    setTeacher(pickUserName(u));
-    setTeacherId(id);
+    setTeacher(user.name ?? "");
+    setTeacherId(user.id);
     setTeacherPickerOpen(false);
   };
 
   const canSubmit = useMemo(() => {
     return (
       name.trim() !== "" &&
-      teacherId !== "" && // ✅ teacherId 필수
+      teacherId !== "" &&
       daysOfWeek.length >= 1 &&
       startDate !== "" &&
       endDate !== "" &&
@@ -177,16 +126,6 @@ export default function MakeLectureModal({
   }, [name, teacherId, daysOfWeek.length, startDate, endDate]);
 
   const handleCreate = async () => {
-    console.log("handleCreate clicked", {
-      name,
-      teacher,
-      teacherId,
-      days,
-      daysOfWeek,
-      startDate,
-      endDate,
-    });
-
     if (!name.trim()) {
       alert("강의명을 입력해주세요.");
       return;
@@ -208,53 +147,28 @@ export default function MakeLectureModal({
       return;
     }
 
-    const payload: LectureCreationRequest & {
-      teacherId: number;
-      daysOfWeek: DayOfWeek[];
-    } = {
+    const payload: LectureCreationRequest = {
       title: name.trim(),
-      description: description.trim() ? description.trim() : null,
+      description: description.trim() || null,
       teacherId: Number(teacherId),
       daysOfWeek,
-      startDate: toLocalDateTimeStart(startDate),
-      endDate: toLocalDateTimeEnd(endDate),
-    } as LectureCreationRequest & {
-      teacherId: number;
-      daysOfWeek: DayOfWeek[];
+      startDate: `${startDate}T00:00:00`,
+      endDate: `${endDate}T23:59:59`,
     };
 
     try {
-      console.log("before mutateAsync");
-      const res = await createLecture.mutateAsync({ data: payload });
-      console.log("after mutateAsync res:", res);
+      await createLecture.mutateAsync({ data: payload });
       alert("강의가 생성되었습니다.");
       onSaved();
       handleClose();
-    } catch (err: any) {
-      console.log("createLecture error:", err);
-      console.log("status:", err?.response?.status);
-      console.log("data:", err?.response?.data);
-      alert(err?.response?.data?.message ?? "강의 생성에 실패했습니다.");
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      alert(error.response?.data?.message ?? "강의 생성에 실패했습니다.");
     }
-
-    // try {
-    //   await createLecture.mutateAsync({ data: payload });
-    //   alert("강의가 생성되었습니다.");
-    //   onSaved();
-    //   handleClose();
-    // } catch (err: any) {
-    //   console.log("createLecture error:", err?.response?.data);
-    //   alert(err?.response?.data?.message ?? "강의 생성에 실패했습니다.");
-    // }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="강의 생성하기"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title="강의 생성하기" size="lg">
       <div className="space-y-6">
         {/* 강의명 */}
         <div className="flex gap-3 items-end justify-between">
@@ -269,7 +183,7 @@ export default function MakeLectureModal({
           </div>
         </div>
 
-        {/* 담당 강사 (디자인 유지) */}
+        {/* 담당 강사 */}
         <div className="flex gap-3 items-end justify-between">
           <div className="flex-1">
             <FormInput
@@ -278,7 +192,6 @@ export default function MakeLectureModal({
               className="w-full"
               value={teacher}
               onChange={(e) => {
-                // 이름을 직접 바꾸면 선택된 teacherId는 무효 처리
                 setTeacher(e.target.value);
                 setTeacherId("");
               }}
@@ -294,7 +207,7 @@ export default function MakeLectureModal({
           </Button>
         </div>
 
-        {/* ✅ 강사 검색 패널 (같은 모달 안에서만 표시) */}
+        {/* 강사 검색 패널 */}
         {teacherPickerOpen && (
           <div className="border rounded-lg p-3 bg-white space-y-2">
             <div className="flex gap-2">
@@ -303,11 +216,9 @@ export default function MakeLectureModal({
                 placeholder="강사 이름/아이디로 검색"
                 value={teacherKeyword}
                 onChange={(e) => setTeacherKeyword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") searchQuery.refetch();
-                }}
+                onKeyDown={(e) => e.key === "Enter" && refetch()}
               />
-              <Button type="button" onClick={() => searchQuery.refetch()}>
+              <Button type="button" onClick={() => refetch()}>
                 검색
               </Button>
               <Button
@@ -319,42 +230,34 @@ export default function MakeLectureModal({
               </Button>
             </div>
 
-            {searchQuery.isFetching && (
+            {isFetching && (
               <p className="text-sm text-gray-500">검색 중...</p>
             )}
 
-            {searchQuery.isError && (
-              <p className="text-sm text-red-500">
-                사용자 검색에 실패했습니다.
-              </p>
+            {isError && (
+              <p className="text-sm text-red-500">사용자 검색에 실패했습니다.</p>
             )}
 
-            {!searchQuery.isFetching && teacherCandidates.length === 0 && (
+            {!isFetching && candidates.length === 0 && (
               <p className="text-sm text-gray-500">검색 결과가 없습니다.</p>
             )}
 
             <div className="max-h-56 overflow-auto space-y-2">
-              {teacherCandidates.map((u: any, idx: number) => {
-                const id = pickUserId(u);
-                const nm = pickUserName(u);
-                const tp = pickUserType(u);
-
-                return (
-                  <button
-                    key={`${id ?? "noid"}-${idx}`}
-                    type="button"
-                    className="w-full text-left border rounded-lg px-3 py-2 hover:bg-gray-50"
-                    onClick={() => selectTeacher(u)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{nm}</div>
-                      <div className="text-xs text-gray-500">
-                        {tp ? tp : "유형 미확인"} / ID: {id ?? "-"}
-                      </div>
+              {candidates.map((user, idx) => (
+                <button
+                  key={user.id ?? idx}
+                  type="button"
+                  className="w-full text-left border rounded-lg px-3 py-2 hover:bg-gray-50"
+                  onClick={() => selectTeacher(user)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium">{user.name ?? "-"}</div>
+                    <div className="text-xs text-gray-500">
+                      {roleToKorean(user.role)} / ID: {user.id ?? "-"}
                     </div>
-                  </button>
-                );
-              })}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -378,11 +281,8 @@ export default function MakeLectureModal({
             요일 선택
           </label>
           <div className="flex justify-between">
-            {["월", "화", "수", "목", "금", "토", "일"].map((day) => (
-              <label
-                key={day}
-                className="flex items-center gap-1 cursor-pointer"
-              >
+            {DAYS.map((day) => (
+              <label key={day} className="flex items-center gap-1 cursor-pointer">
                 <input
                   type="checkbox"
                   className="checkbox checkbox-sm"

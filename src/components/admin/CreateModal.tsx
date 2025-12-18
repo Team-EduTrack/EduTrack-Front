@@ -4,12 +4,11 @@ import Input from "../common/Input";
 import Button from "../common/Button";
 import { usePrincipalSignup } from "../../api/generated/edutrack";
 import { useConfirm } from "../../hooks/useConfirm";
-import type { User } from "../../types/user";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (code: string, newUser: User) => void;
+  onSuccess: (code: string) => void;
 }
 
 const INITIAL_FORM = {
@@ -81,18 +80,7 @@ export default function CreateModal({ isOpen, onClose, onSuccess }: Props) {
       },
       {
         onSuccess: ({ data }) => {
-          const newUser: User = {
-            id: data.id ?? Date.now(),
-            name: formData.name,
-            role: "원장",
-            userId: formData.userId,
-            phone: formData.phone,
-            email: formData.email,
-            schoolName: formData.schoolName,
-            code: data.academyCode ?? "",
-            createdAt: new Date(),
-          };
-          onSuccess(data.academyCode ?? "", newUser);
+          onSuccess(data.academyCode ?? "");
           resetForm();
         },
         onError: (err) => {

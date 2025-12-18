@@ -60,6 +60,10 @@ export interface SignupRequest {
   academyCode: string;
 }
 
+export interface SignupInitResponse {
+  signupToken: string;
+}
+
 export interface SignupResponse {
   id?: number;
   loginId?: string;
@@ -68,12 +72,21 @@ export interface SignupResponse {
 }
 
 export interface SendEmailVerificationRequest {
-  email: string;
+  signupToken: string;
 }
 
 export interface VerifyEmailRequest {
-  email: string;
-  token: string;
+  signupToken: string;
+  inputCode: string;
+}
+
+export interface AcademyVerifyRequest {
+  signupToken: string;
+  academyCode: string;
+}
+
+export interface CompleteSignupRequest {
+  signupToken: string;
 }
 
 export interface UserSearchResultResponse {
@@ -83,6 +96,13 @@ export interface UserSearchResultResponse {
   phone?: string;
   email?: string;
   role?: string;
+}
+
+export interface SearchAllUserResponse {
+  /** 사용자 목록 */
+  users?: UserSearchResultResponse[];
+  /** 전체 사용자 수 */
+  totalCount?: number;
 }
 
 export interface PrincipalRegistrationRequest {
@@ -101,11 +121,11 @@ export interface PrincipalRegistrationResponse {
   academyCode?: string;
 }
 
-export type LectureCreationRequestDate = typeof LectureCreationRequestDate[keyof typeof LectureCreationRequestDate];
+export type LectureCreationRequestDaysOfWeekItem = typeof LectureCreationRequestDaysOfWeekItem[keyof typeof LectureCreationRequestDaysOfWeekItem];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const LectureCreationRequestDate = {
+export const LectureCreationRequestDaysOfWeekItem = {
   MONDAY: 'MONDAY',
   TUESDAY: 'TUESDAY',
   WEDNESDAY: 'WEDNESDAY',
@@ -116,10 +136,23 @@ export const LectureCreationRequestDate = {
 } as const;
 
 export interface LectureCreationRequest {
+  /** 강의 제목 (필수) */
   title: string;
-  description?: string;
-  date: LectureCreationRequestDate;
+  /**
+   * 강의 설명 (선택)
+   * @nullable
+   */
+  description?: string | null;
+  /** 강사 ID (필수) */
+  teacherId: number;
+  /**
+   * 강의 요일 목록 (필수, 최소 1개 이상)
+   * @minItems 1
+   */
+  daysOfWeek: LectureCreationRequestDaysOfWeekItem[];
+  /** 강의 시작일 (필수) */
   startDate: string;
+  /** 강의 종료일 (필수, 미래 날짜) */
   endDate: string;
 }
 
@@ -657,7 +690,7 @@ export type SubmitAssignmentParams = {
 studentId: number;
 };
 
-export type SubmitAssignmentParams = {
+export type SubmitAssignmentLegacyParams = {
 studentId: number;
 };
 
@@ -865,17 +898,84 @@ export function useGetMyInfo<TData = Awaited<ReturnType<typeof getMyInfo>>, TErr
 
 
 /**
+ * 관리자가 시스템의 모든 사용자(모든 학원 소속)를 조회합니다.
+ * @summary 관리자 전용 모든 사용자 조회
+ */
+export const getAllUsers = (
+     options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<SearchAllUserResponse>> => {
+    
+    
+    return axios.default.get(
+      `/api/admin/users`,options
+    );
+  }
+
+
+
+
+export const getGetAllUsersQueryKey = () => {
+    return [
+    `/api/admin/users`
+    ] as const;
+    }
+
+    
+export const getGetAllUsersQueryOptions = <TData = Awaited<ReturnType<typeof getAllUsers>>, TError = AxiosError<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAllUsers>>, TError, TData>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAllUsersQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllUsers>>> = ({ signal }) => getAllUsers({ signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllUsers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAllUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getAllUsers>>>
+export type GetAllUsersQueryError = AxiosError<void>
+
+
+/**
+ * @summary 관리자 전용 모든 사용자 조회
+ */
+
+export function useGetAllUsers<TData = Awaited<ReturnType<typeof getAllUsers>>, TError = AxiosError<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAllUsers>>, TError, TData>, axios?: AxiosRequestConfig}
+  
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAllUsersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+
+/**
  * @summary 회원가입
  */
 export const signupRequest = (
     signupRequest: SignupRequest, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<string>> => {
+ ): Promise<AxiosResponse<SignupInitResponse>> => {
     
     
     return axios.default.post(
       `/api/auth/signup/request`,
-      signupRequest,{
-    ...options,}
+      signupRequest,options
     );
   }
 
@@ -2322,13 +2422,14 @@ export function useGetMySubmission<TData = Awaited<ReturnType<typeof getMySubmis
  * @summary 과제 제출용 Presigned URL 발급
  */
 export const getAssignmentPresignedUrl = (
+    academyId: number,
     assignmentId: number,
     presignedUrlRequest: PresignedUrlRequest, options?: AxiosRequestConfig
  ): Promise<AxiosResponse<PresignedUrlResponse>> => {
     
     
     return axios.default.post(
-      `/api/assignments/${assignmentId}/presigned-url`,
+      `/api/academies/${academyId}/assignments/${assignmentId}/submissions/presigned-url`,
       presignedUrlRequest,options
     );
   }
@@ -2336,8 +2437,8 @@ export const getAssignmentPresignedUrl = (
 
 
 export const getGetAssignmentPresignedUrlMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, TError,{assignmentId: number;data: PresignedUrlRequest}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, TError,{assignmentId: number;data: PresignedUrlRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, TError,{academyId: number;assignmentId: number;data: PresignedUrlRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, TError,{academyId: number;assignmentId: number;data: PresignedUrlRequest}, TContext> => {
 
 const mutationKey = ['getAssignmentPresignedUrl'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
@@ -2349,10 +2450,10 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, {assignmentId: number;data: PresignedUrlRequest}> = (props) => {
-          const {assignmentId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, {academyId: number;assignmentId: number;data: PresignedUrlRequest}> = (props) => {
+          const {academyId,assignmentId,data} = props ?? {};
 
-          return  getAssignmentPresignedUrl(assignmentId,data,axiosOptions)
+          return  getAssignmentPresignedUrl(academyId,assignmentId,data,axiosOptions)
         }
 
         
@@ -2368,11 +2469,11 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  * @summary 과제 제출용 Presigned URL 발급
  */
 export const useGetAssignmentPresignedUrl = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, TError,{assignmentId: number;data: PresignedUrlRequest}, TContext>, axios?: AxiosRequestConfig}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrl>>, TError,{academyId: number;assignmentId: number;data: PresignedUrlRequest}, TContext>, axios?: AxiosRequestConfig}
  ): UseMutationResult<
         Awaited<ReturnType<typeof getAssignmentPresignedUrl>>,
         TError,
-        {assignmentId: number;data: PresignedUrlRequest},
+        {academyId: number;assignmentId: number;data: PresignedUrlRequest},
         TContext
       > => {
 
@@ -2385,6 +2486,7 @@ export const useGetAssignmentPresignedUrl = <TError = AxiosError<unknown>,
  * @summary 과제 제출
  */
 export const submitAssignment = (
+    academyId: number,
     assignmentId: number,
     assignmentSubmitRequest: AssignmentSubmitRequest,
     params: SubmitAssignmentParams, options?: AxiosRequestConfig
@@ -2392,7 +2494,7 @@ export const submitAssignment = (
     
     
     return axios.default.post(
-      `/api/assignments/${assignmentId}/submit`,
+      `/api/academies/${academyId}/assignments/${assignmentId}/submissions/submit`,
       assignmentSubmitRequest,{
     ...options,
         params: {...params, ...options?.params},}
@@ -2402,8 +2504,8 @@ export const submitAssignment = (
 
 
 export const getSubmitAssignmentMutationOptions = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssignment>>, TError,{assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}, TContext>, axios?: AxiosRequestConfig}
-): UseMutationOptions<Awaited<ReturnType<typeof submitAssignment>>, TError,{assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssignment>>, TError,{academyId: number;assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof submitAssignment>>, TError,{academyId: number;assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}, TContext> => {
 
 const mutationKey = ['submitAssignment'];
 const {mutation: mutationOptions, axios: axiosOptions} = options ?
@@ -2415,10 +2517,10 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitAssignment>>, {assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}> = (props) => {
-          const {assignmentId,data,params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitAssignment>>, {academyId: number;assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}> = (props) => {
+          const {academyId,assignmentId,data,params} = props ?? {};
 
-          return  submitAssignment(assignmentId,data,params,axiosOptions)
+          return  submitAssignment(academyId,assignmentId,data,params,axiosOptions)
         }
 
         
@@ -2434,11 +2536,11 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  * @summary 과제 제출
  */
 export const useSubmitAssignment = <TError = AxiosError<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssignment>>, TError,{assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}, TContext>, axios?: AxiosRequestConfig}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssignment>>, TError,{academyId: number;assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams}, TContext>, axios?: AxiosRequestConfig}
  ): UseMutationResult<
         Awaited<ReturnType<typeof submitAssignment>>,
         TError,
-        {assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams},
+        {academyId: number;assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentParams},
         TContext
       > => {
 
@@ -2654,6 +2756,135 @@ export const useGradeSubmission = <TError = AxiosError<unknown>,
       > => {
 
       const mutationOptions = getGradeSubmissionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 과제 제출용 Presigned URL 발급 (Legacy)
+ */
+export const getAssignmentPresignedUrlLegacy = (
+    assignmentId: number,
+    presignedUrlRequest: PresignedUrlRequest, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<PresignedUrlResponse>> => {
+    
+    
+    return axios.default.post(
+      `/api/assignments/${assignmentId}/presigned-url`,
+      presignedUrlRequest,options
+    );
+  }
+
+
+
+export const getGetAssignmentPresignedUrlLegacyMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrlLegacy>>, TError,{assignmentId: number;data: PresignedUrlRequest}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrlLegacy>>, TError,{assignmentId: number;data: PresignedUrlRequest}, TContext> => {
+
+const mutationKey = ['getAssignmentPresignedUrlLegacy'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getAssignmentPresignedUrlLegacy>>, {assignmentId: number;data: PresignedUrlRequest}> = (props) => {
+          const {assignmentId,data} = props ?? {};
+
+          return  getAssignmentPresignedUrlLegacy(assignmentId,data,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GetAssignmentPresignedUrlLegacyMutationResult = NonNullable<Awaited<ReturnType<typeof getAssignmentPresignedUrlLegacy>>>
+    export type GetAssignmentPresignedUrlLegacyMutationBody = PresignedUrlRequest
+    export type GetAssignmentPresignedUrlLegacyMutationError = AxiosError<unknown>
+
+    /**
+ * @summary 과제 제출용 Presigned URL 발급 (Legacy)
+ */
+export const useGetAssignmentPresignedUrlLegacy = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAssignmentPresignedUrlLegacy>>, TError,{assignmentId: number;data: PresignedUrlRequest}, TContext>, axios?: AxiosRequestConfig}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof getAssignmentPresignedUrlLegacy>>,
+        TError,
+        {assignmentId: number;data: PresignedUrlRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getGetAssignmentPresignedUrlLegacyMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 과제 제출 (Legacy)
+ */
+export const submitAssignmentLegacy = (
+    assignmentId: number,
+    assignmentSubmitRequest: AssignmentSubmitRequest,
+    params: SubmitAssignmentLegacyParams, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<AssignmentSubmitResponse>> => {
+    
+    
+    return axios.default.post(
+      `/api/assignments/${assignmentId}/submit`,
+      assignmentSubmitRequest,{
+    ...options,
+        params: {...params, ...options?.params},}
+    );
+  }
+
+
+
+export const getSubmitAssignmentLegacyMutationOptions = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssignmentLegacy>>, TError,{assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentLegacyParams}, TContext>, axios?: AxiosRequestConfig}
+): UseMutationOptions<Awaited<ReturnType<typeof submitAssignmentLegacy>>, TError,{assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentLegacyParams}, TContext> => {
+
+const mutationKey = ['submitAssignmentLegacy'];
+const {mutation: mutationOptions, axios: axiosOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, axios: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitAssignmentLegacy>>, {assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentLegacyParams}> = (props) => {
+          const {assignmentId,data,params} = props ?? {};
+
+          return  submitAssignmentLegacy(assignmentId,data,params,axiosOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitAssignmentLegacyMutationResult = NonNullable<Awaited<ReturnType<typeof submitAssignmentLegacy>>>
+    export type SubmitAssignmentLegacyMutationBody = AssignmentSubmitRequest
+    export type SubmitAssignmentLegacyMutationError = AxiosError<unknown>
+
+    /**
+ * @summary 과제 제출 (Legacy)
+ */
+export const useSubmitAssignmentLegacy = <TError = AxiosError<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitAssignmentLegacy>>, TError,{assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentLegacyParams}, TContext>, axios?: AxiosRequestConfig}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitAssignmentLegacy>>,
+        TError,
+        {assignmentId: number;data: AssignmentSubmitRequest;params: SubmitAssignmentLegacyParams},
+        TContext
+      > => {
+
+      const mutationOptions = getSubmitAssignmentLegacyMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
