@@ -1957,22 +1957,34 @@ components:
     QuestionRegistrationRequest:
       type: object
       properties:
-        questionText:
+        content:
           type: string
+          description: 문제 내용
         choices:
           type: array
           items:
             type: string
-        correctAnswerIndex:
+          description: 문제의 보기 (최소 1개 이상)
+        answerNumber:
           type: integer
           format: int32
-        difficulty:
-          type: string
-          enum: [EASY, MEDIUM, HARD]
+          minimum: 1
+          maximum: 5
+          description: 정답 번호 (1~5)
+        score:
+          type: integer
+          format: int32
+          minimum: 1
+          description: 배점 (1점 이상)
         unitId:
           type: integer
           format: int64
-      required: [questionText, choices, correctAnswerIndex, difficulty, unitId]
+          description: 단원 ID
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+          description: 난이도
+      required: [content, choices, answerNumber, score, unitId, difficulty]
 
     QuestionIdResponse:
       type: object

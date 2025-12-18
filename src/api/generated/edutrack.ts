@@ -368,6 +368,9 @@ export interface ExamCreationResponse {
   examId?: number;
 }
 
+/**
+ * 난이도
+ */
 export type QuestionRegistrationRequestDifficulty = typeof QuestionRegistrationRequestDifficulty[keyof typeof QuestionRegistrationRequestDifficulty];
 
 
@@ -379,11 +382,25 @@ export const QuestionRegistrationRequestDifficulty = {
 } as const;
 
 export interface QuestionRegistrationRequest {
-  questionText: string;
+  /** 문제 내용 */
+  content: string;
+  /** 문제의 보기 (최소 1개 이상) */
   choices: string[];
-  correctAnswerIndex: number;
-  difficulty: QuestionRegistrationRequestDifficulty;
+  /**
+   * 정답 번호 (1~5)
+   * @minimum 1
+   * @maximum 5
+   */
+  answerNumber: number;
+  /**
+   * 배점 (1점 이상)
+   * @minimum 1
+   */
+  score: number;
+  /** 단원 ID */
   unitId: number;
+  /** 난이도 */
+  difficulty: QuestionRegistrationRequestDifficulty;
 }
 
 export interface QuestionIdResponse {

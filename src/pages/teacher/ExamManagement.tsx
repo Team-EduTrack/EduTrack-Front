@@ -105,9 +105,10 @@ export default function ExamManagement() {
         if (examId && questions.length > 0) {
           const questionRequests: QuestionRegistrationRequest[] = questions.map(
             (q) => ({
-              questionText: q.question,
+              content: q.question,
               choices: q.options,
-              correctAnswerIndex: q.answer - 1, // 0-based index
+              answerNumber: q.answer, // 1-based (1~5)
+              score: q.score,
               difficulty:
                 q.difficulty === "상"
                   ? "HARD"
