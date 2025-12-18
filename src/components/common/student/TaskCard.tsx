@@ -37,9 +37,7 @@ export default function TaskCard({
 }) {
   const [openType, setOpenType] = useState<"assignment" | "exam" | null>(null);
   const navigate = useNavigate();
-  const { assignments: rawAssignments, isError } = useLectureAssignments(
-    lecture.id
-  );
+  const { assignments: rawAssignments } = useLectureAssignments(lecture.id);
 
   const lectureAssignments = rawAssignments.map(mapAssignment);
 
@@ -133,7 +131,7 @@ export default function TaskCard({
         <Button
           size="sm"
           disabled={row.status !== "응시 가능"}
-          onClick={() => navigate(`/student/tasks/exam/${row.id}`)}
+          onClick={() => navigate(`/student/tasks/exam/${lecture.id}/${row.id}`)}
         >
           응시하기
         </Button>

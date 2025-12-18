@@ -42,7 +42,7 @@ export default function AppRouter() {
           path="/student/tasks/assignment/:assignmentId"
           element={<AssignmentSubmit />}
         />
-        <Route path="/student/tasks/exam/:examId" element={<ExamTake />} />
+        <Route path="/student/tasks/exam/:lectureId/:examId" element={<ExamTake />} />
         <Route path="/student/grades/:lectureId?" element={<GradeReport />} />
 
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
