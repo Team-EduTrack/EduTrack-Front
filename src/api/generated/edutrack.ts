@@ -355,6 +355,7 @@ export interface AssignmentGradeResponse {
 }
 
 export interface ExamCreationRequest {
+  lectureId: number;
   title: string;
   description?: string;
   startDate: string;

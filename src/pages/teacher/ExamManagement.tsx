@@ -90,6 +90,7 @@ export default function ExamManagement() {
         const examResult = await createExam({
           lectureId: selectedLecture,
           data: {
+            lectureId: selectedLecture,
             title: examName,
             description: assignmentDescription || undefined,
             startDate: new Date(startDate).toISOString(),

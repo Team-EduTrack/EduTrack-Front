@@ -1928,6 +1928,9 @@ components:
     ExamCreationRequest:
       type: object
       properties:
+        lectureId:
+          type: integer
+          format: int64
         title:
           type: string
         description:
@@ -1942,7 +1945,7 @@ components:
           type: integer
           format: int32
           minimum: 5
-      required: [title, startDate, endDate, durationMinute]
+      required: [lectureId, title, startDate, endDate, durationMinute]
 
     ExamCreationResponse:
       type: object
