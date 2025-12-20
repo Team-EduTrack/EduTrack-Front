@@ -6,7 +6,7 @@ import Button from "../../components/common/Button";
 import { useEffect, useState } from "react";
 import StatBox from "../../components/common/StatBox";
 import {
-  ExamStartResponse,
+  type ExamStartResponse,
   useSaveAnswers,
   useStartExam,
   useSubmitExam,

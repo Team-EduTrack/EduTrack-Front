@@ -33,13 +33,8 @@ export default function StudentLectureDetail() {
           <div className="flex justify-between items-start">
             <LectureHeader
               name={lecture?.lectureTitle ?? ""}
-              level={"-"}
-              description={"설명 준비중입니다."}
-              thumbnail={""}
-              //백엔드 수정 필요
-              //level={lecture?.level ?? ""}
-              //description={lecture?.description ?? ""}
-              //thumbnail={lecture?.thumbnail ?? ""}
+              description={lecture?.description ?? ""}
+              //thumbnail={lecture?.?? ""}
             />
 
             <span className="text-sm text-gray-500 ml-6 mt-1 whitespace-nowrap">

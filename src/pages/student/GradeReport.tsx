@@ -96,7 +96,7 @@ export default function GradeReport() {
                 </Card>
               </article>
 
-              <Card title="평균 성적">
+              <Card title="출석률">
                 <div className="grid grid-cols-2 gap-12">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
