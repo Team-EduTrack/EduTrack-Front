@@ -23,6 +23,7 @@ import AssignmentSubmit from "../pages/student/AssignmentSubmit";
 import ExamTake from "../pages/student/ExamTake";
 import GradeReport from "../pages/student/GradeReport";
 import StudentLectureList from "../pages/student/LectureList";
+import ProtectedRoute from "../components/common/layout/ProtectedRoute";
 
 export default function AppRouter() {
   return (
@@ -30,52 +31,77 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 
-      <Route element={<Layout />}>
-        <Route path="/student/dashboard" element={<StudentDashboard />} />
-        <Route path="/student/lectures" element={<StudentLectureList />} />
-        <Route
-          path="/student/lectures/:lectureId"
-          element={<StudentLectureDetail />}
-        />
-        <Route path="/student/tasks" element={<LectureTasks />} />
-        <Route
-          path="/student/tasks/assignment/:assignmentId"
-          element={<AssignmentSubmit />}
-        />
-        <Route path="/student/tasks/exam/:lectureId/:examId" element={<ExamTake />} />
-        <Route path="/student/grades/:lectureId?" element={<GradeReport />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/lectures" element={<StudentLectureList />} />
+            <Route
+              path="/student/lectures/:lectureId"
+              element={<StudentLectureDetail />}
+            />
+            <Route path="/student/tasks" element={<LectureTasks />} />
+            <Route
+              path="/student/tasks/assignment/:assignmentId"
+              element={<AssignmentSubmit />}
+            />
+            <Route
+              path="/student/tasks/exam/:lectureId/:examId"
+              element={<ExamTake />}
+            />
+            <Route
+              path="/student/grades/:lectureId?"
+              element={<GradeReport />}
+            />
+          </Route>
 
-        <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-        <Route path="/teacher/lectures" element={<LectureManagement />} />
-        <Route
-          path="/teacher/lectures/:lectureId"
-          element={<LectureDetail />}
-        />
-        <Route path="/teacher/exams" element={<ExamManagement />} />
-        <Route path="/teacher/grades" element={<GradeManagement />} />
-        <Route path="/teacher/grades/:lectureId" element={<GradeDetail />} />
-        <Route
-          path="/teacher/students/:studentId"
-          element={<StudentDetail />}
-        />
-        <Route
-          path="/teacher/assignments/:assignmentId/submissions/:submissionId"
-          element={<AssignmentGrading />}
-        />
-        <Route path="/principal/dashboard" element={<PrincipalDashBoard />} />
-        <Route
-          path="/principal/lectures"
-          element={<PrincipalLectureManagement />}
-        />
-        <Route
-          path="/principal/lectures/:lectureId"
-          element={<GradeDetail />}
-        />
-        <Route path="/principal/users" element={<PrincipalUserManagement />} />
+          <Route element={<ProtectedRoute allowedRoles={["TEACHER"]} />}>
+            <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+            <Route path="/teacher/lectures" element={<LectureManagement />} />
+            <Route
+              path="/teacher/lectures/:lectureId"
+              element={<LectureDetail />}
+            />
+            <Route path="/teacher/exams" element={<ExamManagement />} />
+            <Route path="/teacher/grades" element={<GradeManagement />} />
+            <Route
+              path="/teacher/grades/:lectureId"
+              element={<GradeDetail />}
+            />
+            <Route
+              path="/teacher/students/:studentId"
+              element={<StudentDetail />}
+            />
+            <Route
+              path="/teacher/assignments/:assignmentId/submissions/:submissionId"
+              element={<AssignmentGrading />}
+            />
+          </Route>
 
-        <Route path="/admin/users" element={<UserManagement />} />
+          <Route element={<ProtectedRoute allowedRoles={["PRINCIPAL"]} />}>
+            <Route
+              path="/principal/dashboard"
+              element={<PrincipalDashBoard />}
+            />
+            <Route
+              path="/principal/lectures"
+              element={<PrincipalLectureManagement />}
+            />
+            <Route
+              path="/principal/lectures/:lectureId"
+              element={<GradeDetail />}
+            />
+            <Route
+              path="/principal/users"
+              element={<PrincipalUserManagement />}
+            />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+            <Route path="/admin/users" element={<UserManagement />} />
+          </Route>
+        </Route>
       </Route>
-
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="*" element={<h1>404 Not Found</h1>} />
     </Routes>

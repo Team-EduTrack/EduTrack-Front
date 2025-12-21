@@ -1,5 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiBell, FiUser } from "react-icons/fi";
+import { useLogout } from "../../../api/generated/edutrack";
 
 const menuByRole = {
   STUDENT: {
@@ -44,6 +45,20 @@ export default function Header() {
   const { pathname } = useLocation();
   const role = getRoleFromPath(pathname);
   const { home, menus } = menuByRole[role];
+  const logoutMutation = useLogout();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("auth");
+
+        navigate("/login");
+      },
+    });
+  };
 
   return (
     <header className="bg-white border-b border-gray-200">
@@ -73,9 +88,30 @@ export default function Header() {
             <FiBell size={20} />
           </button>
 
-          <button className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100">
-            <FiUser size={20} />
-          </button>
+          <div className="dropdown dropdown-end">
+            <button
+              tabIndex={0}
+              role="button"
+              className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+              aria-label="profile menu"
+            >
+              <FiUser size={20} />
+            </button>
+
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box z-[1] w-44 p-2 shadow"
+            >
+              <li>
+                <Link to="#">마이페이지</Link>
+              </li>
+              <li>
+                <Link to="#" onClick={handleLogout}>
+                  로그아웃
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </header>
