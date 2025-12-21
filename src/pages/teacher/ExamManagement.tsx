@@ -60,7 +60,8 @@ export default function ExamManagement() {
   const selectedLectureName =
     lectures.find((l) => l.lectureId === selectedLecture)?.title || "";
   const isExam = activeTab === "exam";
-  const isSubmitting = isCreatingExam || isCreatingAssignment || isRegisteringQuestions;
+  const isSubmitting =
+    isCreatingExam || isCreatingAssignment || isRegisteringQuestions;
 
   const handleAddQuestion = (question: Question) => {
     setQuestions((prev) => [...prev, question]);
@@ -113,8 +114,8 @@ export default function ExamManagement() {
                 q.difficulty === "상"
                   ? "HARD"
                   : q.difficulty === "중"
-                    ? "MEDIUM"
-                    : "EASY",
+                  ? "MEDIUM"
+                  : "EASY",
               unitId: q.unitId || 1,
             })
           );
@@ -158,7 +159,9 @@ export default function ExamManagement() {
     }`;
 
   const radioClass = (isActive: boolean) =>
-    `w-4 h-4 rounded-full border-2 ${isActive ? "bg-white border-white" : "border-gray-400"}`;
+    `w-4 h-4 rounded-full border-2 ${
+      isActive ? "bg-white border-white" : "border-gray-400"
+    }`;
 
   if (isLoadingLectures) {
     return (
@@ -221,7 +224,9 @@ export default function ExamManagement() {
               <input
                 type="text"
                 className="input input-bordered w-full max-w-md bg-white"
-                placeholder={`${selectedLectureName} | ${isExam ? "1차 지필평가" : "2025 11월 영어 독후감 쓰기"}`}
+                placeholder={`${selectedLectureName} | ${
+                  isExam ? "1차 지필평가" : "2025 11월 영어 독후감 쓰기"
+                }`}
                 value={examName}
                 onChange={(e) => setExamName(e.target.value)}
               />
@@ -234,7 +239,7 @@ export default function ExamManagement() {
                 </label>
                 <textarea
                   className="w-full h-24 p-3 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-200 bg-white"
-                  placeholder="이번 달 첫 번째 주 원서 'Diary of a Wimpkid' 에 대한 독후감을 영어로 작성하여 제출하세요."
+                  placeholder="과제 설명을 입력해주세요."
                   value={assignmentDescription}
                   onChange={(e) => setAssignmentDescription(e.target.value)}
                 />
@@ -290,7 +295,9 @@ export default function ExamManagement() {
                   />
                   <span className="text-sm text-gray-600">분</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">최소 5분 이상 설정해주세요.</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  최소 5분 이상 설정해주세요.
+                </p>
               </div>
             )}
 
@@ -324,9 +331,15 @@ export default function ExamManagement() {
                           <p className="font-medium text-gray-900">
                             문제 {index + 1}. {question.question.split("\n")[0]}
                           </p>
-                          {question.question.split("\n").slice(1).join("\n") && (
+                          {question.question
+                            .split("\n")
+                            .slice(1)
+                            .join("\n") && (
                             <p className="text-sm text-gray-600">
-                              {question.question.split("\n").slice(1).join("\n")}
+                              {question.question
+                                .split("\n")
+                                .slice(1)
+                                .join("\n")}
                             </p>
                           )}
                           <div className="space-y-1 pt-1">
@@ -370,8 +383,8 @@ export default function ExamManagement() {
                 {isSubmitting
                   ? "생성 중..."
                   : isExam
-                    ? "시험 생성"
-                    : "과제 생성"}
+                  ? "시험 생성"
+                  : "과제 생성"}
               </Button>
             </div>
           </form>
