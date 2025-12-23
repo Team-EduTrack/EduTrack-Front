@@ -9,14 +9,15 @@ import ScoreDonut from "../../components/common/student/ScoreDonut";
 import { useParams } from "react-router-dom";
 import useMyLectures from "../../hooks/student/useMyLectures";
 import {
-  useGetLectureUnitCorrectRates,
+  useGetLectureAverageScores,
   useGetMonthlyAttendance,
-  useGetWeakUnits,
   type MyLectureResponse,
 } from "../../api/generated/edutrack";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../stores/authStore";
 import UnitScoreChart from "../../components/charts/UnitScoreChart";
+import { useLectureUnitAvgScores } from "../../hooks/student/useAllUnitRates";
+import { useStudentLectureUnitScores } from "../../hooks/student/useMyUnitRates";
 
 export default function GradeReport() {
   const auth = useRecoilValue(authState);
@@ -43,17 +44,29 @@ export default function GradeReport() {
     { year, month }
   );
 
-  const { data: weakUnitsRes } = useGetWeakUnits(studentId!, { limit: 8 });
-  const weakUnits = weakUnitsRes?.data ?? [];
-  const { data: lectureAvgRes } =
-    useGetLectureUnitCorrectRates(selectedLectureId);
-  const lectureAvgUnits = lectureAvgRes?.data ?? [];
+  const myLectureAvg = useGetLectureAverageScores(studentId, selectedLectureId);
 
-  const avgRateByUnitId = new Map(
-    lectureAvgUnits
-      .filter((u) => u.unitId != null)
-      .map((u) => [u.unitId as number, u.correctRate ?? 0])
+  const lectureAvg = useLectureUnitAvgScores(selectedLectureId);
+
+  const myUnitScores = useStudentLectureUnitScores({
+    studentId,
+    unitIds: lectureAvg.unitIds,
+    labels: lectureAvg.scores.map((s) => s.label),
+  });
+
+  const avgQuery = useGetLectureAverageScores(
+    studentId ?? 0,
+    selectedLectureId,
+    {
+      query: {
+        enabled: !!studentId && selectedLectureId > 0,
+        retry: false,
+      },
+    }
   );
+
+  const status = avgQuery.error?.response?.status;
+  const noData = status === 404;
 
   return (
     <Page>
@@ -63,6 +76,7 @@ export default function GradeReport() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {lectures.map((lecture) => (
               <LectureList
+                thumbnail={lecture.imageUrl}
                 key={lecture.lectureId}
                 name={lecture.lectureTitle ?? "강의명 없음"}
                 onClick={() => setClickedLecture(lecture)}
@@ -127,36 +141,42 @@ export default function GradeReport() {
                 </div>
               </Card>
               <Card title="평균 성적">
-                <div className="grid grid-cols-2 gap-12 ">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 text-center mb-6">
-                      <ScoreDonut score={87} />
-                    </h3>
+                {avgQuery.isLoading ? (
+                  <p className="text-sm text-gray-500 text-center py-8">
+                    불러오는 중...
+                  </p>
+                ) : noData ? (
+                  <p className="text-sm text-gray-500 text-center py-8">
+                    아직 평균을 계산할 시험/과제 데이터가 없습니다.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-12">
+                    <div className="flex justify-center">
+                      <ScoreDonut
+                        title="전체 시험 평균"
+                        score={avgQuery.data?.data?.examAverageGrade ?? 0}
+                      />
+                    </div>
+
+                    <div className="flex justify-center">
+                      <ScoreDonut
+                        title="전체 과제 평균"
+                        score={avgQuery.data?.data?.assignmentAverageScore ?? 0}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 text-center mb-6"></h3>
-                  </div>
-                </div>
+                )}
               </Card>
 
               <Card title="단원별 정답률">
-                <div className="grid grid-cols-2 gap-12 ">
+                <div className="grid grid-cols-2 gap-12 m-2">
                   <UnitScoreChart
                     title="나의 단원별 정답률"
-                    scores={
-                      weakUnits?.map((u) => ({
-                        value: u.correctRate ?? 0,
-                      })) ?? []
-                    }
+                    scores={myUnitScores.scores}
                   />
-
                   <UnitScoreChart
-                    title="수강생 전체 단원별 평균"
-                    scores={weakUnits
-                      .filter((u) => u.unitId != null)
-                      .map((u) => ({
-                        value: avgRateByUnitId.get(u.unitId as number) ?? 0,
-                      }))}
+                    title="수강생 전체 단원별 평균 정답률"
+                    scores={lectureAvg.scores}
                   />
                 </div>
               </Card>

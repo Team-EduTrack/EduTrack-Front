@@ -10,10 +10,7 @@ import CircleProgress from "../../components/common/CircleProgress";
 import StatBox from "../../components/common/StatBox";
 import ScoreBox from "../../components/common/ScoreBox";
 import AddStudentModal from "../../components/teacher/AddStudentModal";
-import {
-  useLectureDetail,
-  useAssignStudents,
-} from "../../hooks/teacher";
+import { useLectureDetail, useAssignStudents } from "../../hooks/teacher";
 
 export default function LectureDetail() {
   const { lectureId } = useParams<{ lectureId: string }>();
@@ -22,8 +19,7 @@ export default function LectureDetail() {
 
   const { lectureDetail, statistics, isLoading, isError } =
     useLectureDetail(lectureIdNum);
-  const { assignStudents, isPending: isAssigning } =
-    useAssignStudents();
+  const { assignStudents, isPending: isAssigning } = useAssignStudents();
 
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -96,8 +92,8 @@ export default function LectureDetail() {
       <div className="space-y-8">
         <Card>
           <LectureHeader
+            thumbnail={lectureDetail.imageUrl ?? undefined}
             name={lectureDetail.title ?? ""}
-            level=""
             description={lectureDetail.description ?? ""}
           />
         </Card>
@@ -205,21 +201,23 @@ export default function LectureDetail() {
                     제출: {assignment.submittedStudents?.length ?? 0}명
                   </p>
                   <div className="space-y-2">
-                    {assignment.submittedStudents?.slice(0, 3).map((student) => (
-                      <ScoreBox
-                        key={student.submissionId}
-                        label={student.studentName ?? ""}
-                        action={
-                          <Link
-                            to={`/teacher/assignments/${assignment.assignmentId}/submissions/${student.submissionId}`}
-                          >
-                            <Button variant="neutral" size="sm">
-                              채점하기
-                            </Button>
-                          </Link>
-                        }
-                      />
-                    ))}
+                    {assignment.submittedStudents
+                      ?.slice(0, 3)
+                      .map((student) => (
+                        <ScoreBox
+                          key={student.submissionId}
+                          label={student.studentName ?? ""}
+                          action={
+                            <Link
+                              to={`/teacher/assignments/${assignment.assignmentId}/submissions/${student.submissionId}`}
+                            >
+                              <Button variant="neutral" size="sm">
+                                채점하기
+                              </Button>
+                            </Link>
+                          }
+                        />
+                      ))}
                   </div>
                 </div>
               ))}
@@ -236,7 +234,9 @@ export default function LectureDetail() {
                 <ScoreBox
                   key={exam.examId}
                   label={exam.examTitle ?? ""}
-                  value={`${exam.participatedCount ?? 0} / ${exam.totalStudentCount ?? 0}명 응시`}
+                  value={`${exam.participatedCount ?? 0} / ${
+                    exam.totalStudentCount ?? 0
+                  }명 응시`}
                 />
               ))}
             </div>

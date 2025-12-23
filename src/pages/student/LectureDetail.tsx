@@ -51,6 +51,7 @@ export default function StudentLectureDetail() {
         <Card>
           <div className="flex justify-between items-start">
             <LectureHeader
+              thumbnail={lectureDetail?.imageUrl ?? undefined}
               name={lectureDetail?.lectureTitle ?? ""}
               description={lectureDetail?.description ?? ""}
             />

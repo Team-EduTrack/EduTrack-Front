@@ -81,13 +81,13 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 모든 사용자 목록
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchAllUserResponse'
-        '403':
+                $ref: "#/components/schemas/SearchAllUserResponse"
+        "403":
           description: 권한 없음 (ADMIN 역할이 아닌 경우)
 
   ########################
@@ -262,6 +262,81 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/QuestionCorrectRateResponse"
+
+  ########################
+  # DifficultyStatisticsController
+  ########################
+  /api/student/statistics/exams/{examId}/difficulty:
+    get:
+      tags: [Student Exams]
+      summary: "학생용: 특정 시험의 난이도별 정답률 통계 조회 (본인)"
+      operationId: getStudentExamDifficultyStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 학생 개인 난이도별 정답률 통계
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DifficultyStatisticsResponse"
+
+  /api/statistics/exams/{examId}/difficulty:
+    get:
+      tags: [Exams]
+      summary: "강사용: 특정 시험의 난이도별 정답률 통계 조회 (전체 학생)"
+      operationId: getExamDifficultyStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 시험 난이도별 정답률 통계
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DifficultyStatisticsResponse"
+
+  /api/statistics/lectures/{lectureId}/difficulty:
+    get:
+      tags: [Lectures]
+      summary: "강사용: 강의의 모든 시험 난이도별 정답률 통계 조회"
+      operationId: getLectureDifficultyStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: lectureId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 강의 난이도별 정답률 통계
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DifficultyStatisticsResponse"
 
   ########################
   # UserSearchController (/api/academies/{academyId}/users)
@@ -546,6 +621,59 @@ paths:
                   $ref: "#/components/schemas/UnitCorrectRateResponse"
         "404":
           description: 강의를 찾을 수 없습니다.
+
+  ########################
+  # UnitStatisticsController (/api/statistics/units)
+  ########################
+  /api/statistics/units/{unitId}/correct-rate:
+    get:
+      tags: [Lectures]
+      summary: 전체 학생 기준 단원 정답률 조회
+      operationId: getUnitCorrectRate
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: unitId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 단원 정답률 정보
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitCorrectRateResponse"
+
+  /api/statistics/units/{unitId}/students/{studentId}/correct-rate:
+    get:
+      tags: [Lectures]
+      summary: 특정 학생 단원 정답률 조회
+      operationId: getStudentUnitCorrectRate
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: unitId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 학생 단원 정답률 정보
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentUnitCorrectRateResponse"
 
   ########################
   # AssignmentController (/api/academies/{academyId}/lectures/{lectureId}/assignments)
@@ -985,6 +1113,31 @@ paths:
                 $ref: "#/components/schemas/ExamDetailResponse"
 
   ########################
+  # ExamStatisticsController (/api/exams)
+  ########################
+  /api/exams/{examId}/distribution:
+    get:
+      tags: [Exams]
+      summary: 시험 점수 분포 조회
+      operationId: getScoreDistribution
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 시험 점수 분포 정보
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExamDistributionResponse"
+
+  ########################
   # StudentExamController (/api/student/exams)
   ########################
   /api/student/exams/{examId}/start:
@@ -1325,6 +1478,38 @@ paths:
         "404":
           description: 학생 또는 강의를 찾을 수 없습니다.
 
+  /api/students/{studentId}/lectures/{lectureId}/average-scores:
+    get:
+      tags: [Student Reports]
+      summary: 학생의 특정 강의에 대한 모든 시험 및 과제 결과 평균 점수 조회
+      operationId: getLectureAverageScores
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: lectureId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 학생의 강의별 시험 및 과제 평균 점수
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentLectureAverageResponse"
+        "403":
+          description: 본인의 시험 및 과제 결과 평균 점수만 조회할 수 있습니다.
+        "404":
+          description: 학생 또는 강의를 찾을 수 없습니다.
+
 components:
   securitySchemes:
     BearerAuth:
@@ -1473,7 +1658,7 @@ components:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/UserSearchResultResponse'
+            $ref: "#/components/schemas/UserSearchResultResponse"
           description: 사용자 목록
         totalCount:
           type: integer
@@ -1543,7 +1728,8 @@ components:
           type: array
           items:
             type: string
-            enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+            enum:
+              [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
           description: 강의 요일 목록 (필수, 최소 1개 이상)
           minItems: 1
         startDate:
@@ -1583,6 +1769,10 @@ components:
           format: double
           nullable: true
           description: 평균 점수
+        imageUrl:
+          type: string
+          nullable: true
+          description: 강의 이미지 URL
 
     LectureDetailForTeacherResponse:
       type: object
@@ -1931,19 +2121,22 @@ components:
         lectureId:
           type: integer
           format: int64
+          description: 강의 ID (필수, 경로 변수로 전달되지만 DTO에도 포함)
         title:
           type: string
-        description:
-          type: string
+          description: 시험 제목 (필수)
         startDate:
           type: string
           format: date-time
+          description: 시험 시작일 (필수)
         endDate:
           type: string
           format: date-time
+          description: 시험 종료일 (필수, 미래 날짜)
         durationMinute:
           type: integer
           format: int32
+          description: 응시 시간(분) (필수, 최소 5분)
           minimum: 5
       required: [lectureId, title, startDate, endDate, durationMinute]
 
@@ -1957,34 +2150,22 @@ components:
     QuestionRegistrationRequest:
       type: object
       properties:
-        content:
+        questionText:
           type: string
-          description: 문제 내용
         choices:
           type: array
           items:
             type: string
-          description: 문제의 보기 (최소 1개 이상)
-        answerNumber:
+        correctAnswerIndex:
           type: integer
           format: int32
-          minimum: 1
-          maximum: 5
-          description: 정답 번호 (1~5)
-        score:
-          type: integer
-          format: int32
-          minimum: 1
-          description: 배점 (1점 이상)
-        unitId:
-          type: integer
-          format: int64
-          description: 단원 ID
         difficulty:
           type: string
           enum: [EASY, MEDIUM, HARD]
-          description: 난이도
-      required: [content, choices, answerNumber, score, unitId, difficulty]
+        unitId:
+          type: integer
+          format: int64
+      required: [questionText, choices, correctAnswerIndex, difficulty, unitId]
 
     QuestionIdResponse:
       type: object
@@ -2327,6 +2508,41 @@ components:
           type: number
           format: double
 
+    DifficultyStatisticsResponse:
+      type: object
+      properties:
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+          description: 문제 난이도
+        totalQuestions:
+          type: integer
+          format: int64
+          description: 전체 문제 수
+        correctQuestions:
+          type: integer
+          format: int64
+          description: 정답 문제 수
+
+    ExamDistributionResponse:
+      type: object
+      properties:
+        ranges:
+          type: array
+          items:
+            type: string
+          description: 점수 구간 목록
+        counts:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: 각 구간별 학생 수
+        totalSubmissions:
+          type: integer
+          format: int32
+          description: 전체 제출 수
+
     ########################
     # Student Dashboard
     ########################
@@ -2348,6 +2564,10 @@ components:
         endDate:
           type: string
           format: date-time
+        imageUrl:
+          type: string
+          nullable: true
+          description: 강의 이미지 URL
 
     MyLectureDetailResponse:
       type: object
@@ -2361,6 +2581,10 @@ components:
           type: string
         description:
           type: string
+        imageUrl:
+          type: string
+          nullable: true
+          description: 강의 이미지 URL
         attendanceRate:
           type: number
           format: double
@@ -2577,3 +2801,15 @@ components:
         otherStudentsAvgAttendanceRate:
           type: number
           format: double
+
+    StudentLectureAverageResponse:
+      type: object
+      properties:
+        examAverageGrade:
+          type: number
+          format: double
+          description: 시험 평균 점수
+        assignmentAverageScore:
+          type: number
+          format: double
+          description: 과제 평균 점수

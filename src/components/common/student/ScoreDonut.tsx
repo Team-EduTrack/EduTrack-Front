@@ -2,9 +2,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 interface Props {
   score: number; // 0~100
+  title: string;
 }
 
-export default function ScoreDonut({ score }: Props) {
+export default function ScoreDonut({ score, title }: Props) {
   const data = [
     { name: "score", value: score },
     { name: "rest", value: 100 - score },
@@ -14,7 +15,7 @@ export default function ScoreDonut({ score }: Props) {
 
   return (
     <div className="w-full h-80 bg-base-100  flex flex-col items-center justify-center">
-      <h3 className="text-sm font-semibold text-center mb-4">나의 성적</h3>
+      <h3 className="text-sm font-semibold text-center mb-4">{title}</h3>
 
       <div className="w-[200px] h-[200px] relative">
         <ResponsiveContainer>

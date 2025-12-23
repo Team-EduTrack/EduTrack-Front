@@ -41,6 +41,7 @@ export default function LectureManagement() {
           <div className="space-y-4">
             {lectures.map((lecture) => (
               <LectureCard
+                thumbnail={lecture.imageUrl ?? undefined}
                 key={lecture.lectureId}
                 name={lecture.title ?? ""}
                 studentCount={lecture.studentCount ?? 0}

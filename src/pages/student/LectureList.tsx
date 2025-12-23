@@ -22,6 +22,7 @@ export default function StudentLectureList() {
                 key={lecture.lectureId}
                 name={lecture.lectureTitle ?? ""}
                 linkTo={`/student/lectures/${lecture.lectureId}`}
+                thumbnail={lecture.imageUrl}
               >
                 <div className="text-sm mr-20">
                   {lecture.teacherName ?? "강사 정보 없음"} 강사님
