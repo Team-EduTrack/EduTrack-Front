@@ -395,6 +395,7 @@ export default function ExamManagement() {
         isOpen={isQuestionModalOpen}
         onClose={() => setIsQuestionModalOpen(false)}
         onAdd={handleAddQuestion}
+        lectureId={selectedLecture}
       />
     </Page>
   );

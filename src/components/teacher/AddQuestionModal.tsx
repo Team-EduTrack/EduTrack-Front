@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
+import { useCreateUnit, useLectureUnits } from "../../hooks/teacher/useUnits";
 
 interface QuestionData {
   id: number;
@@ -17,15 +18,8 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (question: QuestionData) => void;
+  lectureId: number;
 }
-
-const initialUnits = [
-  { value: "1", label: "1과 인사하기" },
-  { value: "2", label: "2과 가족 소개" },
-  { value: "3", label: "3과 학교생활" },
-  { value: "4", label: "4과 취미 활동" },
-  { value: "5", label: "5과 음식과 요리" },
-];
 
 const ADD_UNIT_VALUE = "__ADD_UNIT__";
 
@@ -33,10 +27,27 @@ const answerOptions = [1, 2, 3, 4, 5];
 const scoreOptions = [1, 2, 3, 4, 5];
 const difficultyOptions: ("상" | "중" | "하")[] = ["상", "중", "하"];
 
-export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
-  const [units, setUnits] = useState(initialUnits);
+export default function AddQuestionModal({
+  isOpen,
+  onClose,
+  onAdd,
+  lectureId,
+}: Props) {
+  const {
+    data: unitList = [],
+    isLoading: isUnitsLoading,
+    isError: isUnitsError,
+  } = useLectureUnits(lectureId, isOpen);
 
-  const [unit, setUnit] = useState(units[0].value);
+  const { mutateAsync: createUnitMutate, isPending: isCreatingUnit } =
+    useCreateUnit();
+
+  const units = useMemo(
+    () => unitList.map((u) => ({ value: String(u.unitId), label: u.name })),
+    [unitList]
+  );
+
+  const [unit, setUnit] = useState("");
   const [answer, setAnswer] = useState(1);
   const [score, setScore] = useState(2);
   const [difficulty, setDifficulty] = useState<"상" | "중" | "하">("하");
@@ -46,6 +57,21 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
   const [isUnitModalOpen, setIsUnitModalOpen] = useState(false);
   const [newUnitLabel, setNewUnitLabel] = useState("");
 
+  // useEffect(() => {
+  //   if (!isOpen) return;
+  //   if (units.length === 0) {
+  //     setUnit("");
+  //     return;
+  //   }
+
+  //   if (!unit || !units.some((u) => u.value === unit)) {
+  //     setUnit(units[0].value);
+  //   }
+  // }, [isOpen, units]);
+
+  const selectedUnitValue =
+    unit && units.some((u) => u.value === unit) ? unit : units[0]?.value ?? "";
+
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
     newOptions[index] = value;
@@ -53,7 +79,7 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
   };
 
   const resetForm = () => {
-    setUnit(units[0].value);
+    setUnit("");
     setAnswer(1);
     setScore(2);
     setDifficulty("하");
@@ -62,6 +88,13 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
   };
 
   const handleSubmit = () => {
+    const unitIdValue = selectedUnitValue;
+
+    if (!unitIdValue) {
+      alert("단원을 선택해주세요.");
+      return;
+    }
+
     if (!question.trim()) {
       alert("문제를 입력해주세요.");
       return;
@@ -75,8 +108,8 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
 
     onAdd({
       id: Date.now(),
-      unit: units.find((u) => u.value === unit)?.label || unit,
-      unitId: Number(unit),
+      unit: units.find((u) => u.value === unitIdValue)?.label || unitIdValue,
+      unitId: Number(unitIdValue),
       answer,
       score,
       difficulty,
@@ -89,7 +122,6 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
   };
 
   const handleClose = () => {
-    resetForm();
     onClose();
   };
 
@@ -102,23 +134,22 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
     setUnit(value);
   };
 
-  const handleAddUnitUI = () => {
-    const label = newUnitLabel.trim();
-    if (!label) {
+  const handleAddUnitUI = async () => {
+    const name = newUnitLabel.trim();
+    if (!name) {
       alert("단원명을 입력해주세요.");
       return;
     }
-
-    if (units.some((u) => u.label === label)) {
+    if (units.some((u) => u.label === name)) {
       alert("이미 존재하는 단원명입니다.");
       return;
     }
 
-    const value = String(Date.now()); // UI용 임시 value
-    setUnits((prev) => [...prev, { value, label }]);
-    setUnit(value); // 방금 추가한 단원 선택
+    const created = await createUnitMutate({ lectureId, name });
+
     setIsUnitModalOpen(false);
     setNewUnitLabel("");
+    setUnit(String(created.unitId));
   };
 
   return (
@@ -132,8 +163,9 @@ export default function AddQuestionModal({ isOpen, onClose, onAdd }: Props) {
               </span>
               <select
                 className="select select-bordered select-sm bg-white"
-                value={unit}
+                value={selectedUnitValue}
                 onChange={(e) => handleUnitChange(e.target.value)}
+                disabled={isUnitsLoading || isUnitsError}
               >
                 {units.map((u) => (
                   <option key={u.value} value={u.value}>
