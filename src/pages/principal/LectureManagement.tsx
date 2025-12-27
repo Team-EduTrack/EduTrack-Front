@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import Page from "../../components/common/Page";
@@ -7,13 +7,14 @@ import FormInput from "../../components/common/Input";
 import MakeLectureModal from "../../components/common/principal/MakeLectureModal";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  useGetLecturesByTeacher,
-  getGetLecturesByTeacherQueryKey,
-  type LectureForTeacherResponse,
-} from "../../api/generated/edutrack";
+import { type LectureForTeacherResponse } from "../../api/generated/edutrack";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../stores/authStore";
+import {
+  principalLectureKeys,
+  usePrincipalLectures,
+} from "../../hooks/principal/usePrincipalLectures";
+import Pagination from "../../components/common/principal/Pagination";
 
 export default function PrincipalLectureManagement() {
   const auth = useRecoilValue(authState);
@@ -21,17 +22,17 @@ export default function PrincipalLectureManagement() {
 
   const qc = useQueryClient();
 
-  const lecturesQuery = useGetLecturesByTeacher();
-  console.log("raw axios response:", lecturesQuery.data); // ✅ AxiosResponse 전체
-  console.log("rows:", lecturesQuery.data?.data);
-
-  const rows = lecturesQuery.data?.data ?? [];
-
   const [makeLectureModalOpen, setMakeLectureModalOpen] = useState(false);
 
-  // ✅ UI 삭제(숨김)용
   const [deletedIds, setDeletedIds] = useState<number[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+
+  const lecturesQuery = usePrincipalLectures(page, size);
+  const pageData = lecturesQuery.data;
+  const rows = pageData?.content ?? [];
 
   const lectures = useMemo(() => {
     const list = rows as LectureForTeacherResponse[];
@@ -90,15 +91,8 @@ export default function PrincipalLectureManagement() {
   };
 
   const refetchLectures = async () => {
-    // ✅ orval queryKey로 invalidate
-    await qc.invalidateQueries({ queryKey: getGetLecturesByTeacherQueryKey() });
+    await qc.invalidateQueries({ queryKey: principalLectureKeys.all });
   };
-
-  useEffect(() => {
-    fetch("/api/lectures/6")
-      .then((r) => r.json().then((d) => ({ status: r.status, d })))
-      .then(console.log);
-  }, []);
 
   return (
     <Page>
@@ -202,6 +196,26 @@ export default function PrincipalLectureManagement() {
                 : "등록된 강의가 없습니다."
             }
           />
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-gray-600">
+              {pageData
+                ? `총 ${pageData.totalElements}개 · ${
+                    pageData.totalPages
+                  }페이지 · 현재 ${pageData.number + 1}페이지`
+                : ""}
+            </div>
+
+            {pageData && (
+              <div className="flex justify-end">
+                <Pagination
+                  page={pageData.number}
+                  totalPages={pageData.totalPages}
+                  onChange={(p) => setPage(p)}
+                  maxButtons={5}
+                />
+              </div>
+            )}
+          </div>
         </Card>
 
         <Card className="mb-4" title="성적 비율">

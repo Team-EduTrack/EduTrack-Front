@@ -7,8 +7,10 @@ import Table from "../../components/common/Table";
 import UserModal from "../../components/common/principal/UserModal";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../stores/authStore";
-import { usePrincipalUsers } from "../../hooks/principal/usePrincipalUsers";
 import { useSearchUsers } from "../../api/generated/edutrack";
+
+import UserPagination from "../../components/common/principal/UserPagination";
+import { usePrincipalUsers } from "../../hooks/principal/usePrincipalUsers";
 
 type UiUserRow = {
   id: number;
@@ -29,15 +31,19 @@ export default function PrincipalUserManagement() {
   const [selectedUser, setSelectedUser] = useState<UiUserRow | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
 
+  const [page, setPage] = useState(1);
+  const size = 10;
+  const [lastPage, setLastPage] = useState<number | null>(null);
+
   const { data: teachersAllRes } = useSearchUsers(
     academyId ?? 0,
-    { role: "TEACHER" },
+    { role: "TEACHER", page: 1, size: 10000 },
     { query: { enabled: !!academyId } }
   );
 
   const { data: studentsAllRes } = useSearchUsers(
     academyId ?? 0,
-    { role: "STUDENT" },
+    { role: "STUDENT", page: 1, size: 10000 },
     { query: { enabled: !!academyId } }
   );
 
@@ -45,28 +51,34 @@ export default function PrincipalUserManagement() {
   const studentCount = studentsAllRes?.data?.length ?? 0;
   const totalUsers = teacherCount + studentCount;
 
+  const role =
+    selectedType === "강사"
+      ? "TEACHER"
+      : selectedType === "학생"
+      ? "STUDENT"
+      : undefined;
+
+  const { users, totalCount, totalPages, isLoading } = usePrincipalUsers(
+    academyId,
+    {
+      enabled: userList,
+      role,
+      keyword: searchText,
+      page,
+      size,
+    }
+  );
+
   const usersNumber = {
     totalUsers,
     countTeacher: teacherCount,
     countStudent: studentCount,
   };
 
-  const role =
-    selectedType === "강사"
-      ? "TEACHER"
-      : selectedType === "학생"
-      ? "STUDENT"
-      : "";
-
-  const { users, refetch } = usePrincipalUsers(academyId, {
-    enabled: userList,
-    role,
-    keyword: searchText,
-  });
-
   const handleSearch = () => {
     setUserList(true);
-    refetch();
+    setPage(1);
+    setSelectedUserIds([]);
   };
 
   const filteredUsers: UiUserRow[] = (userList ? users : []).map((u) => ({
@@ -99,11 +111,6 @@ export default function PrincipalUserManagement() {
 
     alert("삭제 API가 아직 없어서 서버에서 삭제할 수 없습니다.");
     setSelectedUserIds([]);
-  };
-
-  const handleUpdateUserType = () => {
-    setSelectedUser(null);
-    setIsModalOpen(false);
   };
 
   if (!academyId) {
@@ -223,18 +230,34 @@ export default function PrincipalUserManagement() {
             userList ? "검색 결과가 없습니다." : "검색을 실행해주세요."
           }
         />
+
+        {userList && (
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-gray-600">
+              총 {totalCount}명 · {totalPages}페이지 · 현재 {page}페이지
+            </div>
+
+            <UserPagination
+              page={page}
+              lastPage={totalPages}
+              onChange={(p) => {
+                setPage(p);
+              }}
+              maxButtons={5}
+            />
+          </div>
+        )}
       </Card>
 
       {selectedUser && (
         <UserModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          academyId={academyId!}
+          academyId={academyId}
           user={selectedUser}
           onSaved={() => {
             setIsModalOpen(false);
             setSelectedUser(null);
-            refetch();
           }}
         />
       )}

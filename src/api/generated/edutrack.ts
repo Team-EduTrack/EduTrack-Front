@@ -121,6 +121,25 @@ export interface PrincipalRegistrationResponse {
   academyCode?: string;
 }
 
+/**
+ * @nullable
+ */
+export type PageUserSearchResultResponsePageable = { [key: string]: unknown } | null;
+
+export interface PageUserSearchResultResponse {
+  content?: UserSearchResultResponse[];
+  /** @nullable */
+  pageable?: PageUserSearchResultResponsePageable;
+  totalElements?: number;
+  totalPages?: number;
+  size?: number;
+  number?: number;
+  first?: boolean;
+  last?: boolean;
+  numberOfElements?: number;
+  empty?: boolean;
+}
+
 export type LectureCreationRequestDaysOfWeekItem = typeof LectureCreationRequestDaysOfWeekItem[keyof typeof LectureCreationRequestDaysOfWeekItem];
 
 
@@ -731,6 +750,14 @@ export interface StudentLectureAverageResponse {
 export type SearchUsersParams = {
 role?: SearchUsersRole;
 keyword?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ */
+size?: number;
 };
 
 export type SearchUsersRole = typeof SearchUsersRole[keyof typeof SearchUsersRole];
@@ -1748,7 +1775,7 @@ export function useGetLectureDifficultyStats<TData = Awaited<ReturnType<typeof g
 export const searchUsers = (
     academyId: number,
     params?: SearchUsersParams, options?: AxiosRequestConfig
- ): Promise<AxiosResponse<UserSearchResultResponse[]>> => {
+ ): Promise<AxiosResponse<PageUserSearchResultResponse[]>> => {
     
     
     return axios.default.get(
