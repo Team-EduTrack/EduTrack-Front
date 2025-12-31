@@ -33,7 +33,7 @@ export default function PrincipalUserManagement() {
 
   const [page, setPage] = useState(1);
   const size = 10;
-  const [lastPage, setLastPage] = useState<number | null>(null);
+  // const [lastPage, setLastPage] = useState<number | null>(null);
 
   const { data: teachersAllRes } = useSearchUsers(
     academyId ?? 0,
@@ -47,8 +47,9 @@ export default function PrincipalUserManagement() {
     { query: { enabled: !!academyId } }
   );
 
-  const teacherCount = teachersAllRes?.data?.length ?? 0;
-  const studentCount = studentsAllRes?.data?.length ?? 0;
+  const teacherCount = (teachersAllRes as any)?.data?.totalElements ?? 0;
+  const studentCount = (studentsAllRes as any)?.data?.totalElements ?? 0;
+
   const totalUsers = teacherCount + studentCount;
 
   const role =

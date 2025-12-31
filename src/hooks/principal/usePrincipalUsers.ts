@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSearchUsers } from "../../api/generated/edutrack";
 import { normalizeUserSearchResponse } from "./normalizeUserSearch";
 
@@ -6,7 +6,7 @@ interface UsePrincipalUsersOptions {
   enabled?: boolean;
   role?: "STUDENT" | "TEACHER" | "PRINCIPAL" | "ADMIN" | "";
   keyword?: string;
-  page?: number; 
+  page?: number;
   size?: number;
 }
 
@@ -16,12 +16,15 @@ export function usePrincipalUsers(
 ) {
   const { enabled = false, role, keyword, page = 1, size = 10 } = options || {};
 
+  const trimmed = keyword?.trim() || "";
+  const pageIndex = page - 1; 
+
   const query = useSearchUsers(
     academyId || 0,
     {
       role: role || undefined,
-      keyword: keyword?.trim() || undefined,
-      page,
+      keyword: trimmed || undefined,
+      page: pageIndex,
       size,
     },
     {
@@ -29,24 +32,17 @@ export function usePrincipalUsers(
         enabled: enabled && !!academyId,
         refetchOnWindowFocus: false,
         staleTime: 30_000,
-        keepPreviousData: true as any,
+
+        keepPreviousData: false as any,
+
+        queryKey: ["principalUsers", academyId, role ?? "ALL", trimmed, page, size],
       },
     }
   );
 
-  const [stableBody, setStableBody] = useState<any>(null);
-
-  useEffect(() => {
-    if (query.data?.data != null) {
-      setStableBody(query.data.data);
-    }
-  }, [query.data?.data]);
-
-  const bodyForRender = query.data?.data ?? stableBody;
-
   const normalized = useMemo(() => {
-    return normalizeUserSearchResponse(bodyForRender, page, size);
-  }, [bodyForRender, page, size]);
+    return normalizeUserSearchResponse(query.data?.data, page, size);
+  }, [query.data?.data, page, size]);
 
   return {
     users: normalized.users,
@@ -62,3 +58,4 @@ export function usePrincipalUsers(
     error: query.error,
   };
 }
+

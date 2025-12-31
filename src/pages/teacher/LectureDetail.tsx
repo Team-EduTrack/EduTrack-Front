@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Page from "../../components/common/Page";
@@ -11,6 +11,8 @@ import StatBox from "../../components/common/StatBox";
 import ScoreBox from "../../components/common/ScoreBox";
 import AddStudentModal from "../../components/teacher/AddStudentModal";
 import { useLectureDetail, useAssignStudents } from "../../hooks/teacher";
+
+import UserPagination from "../../components/common/principal/UserPagination";
 
 export default function LectureDetail() {
   const { lectureId } = useParams<{ lectureId: string }>();
@@ -28,17 +30,30 @@ export default function LectureDetail() {
   const assignments = lectureDetail?.assignmentsWithSubmissions ?? [];
   const exams = lectureDetail?.examsWithParticipation ?? [];
 
+  const pageSize = 10;
+  const [studentPage, setStudentPage] = useState(1);
+  const studentTotalPages = Math.max(1, Math.ceil(students.length / pageSize));
+
+  const pagedStudents = useMemo(() => {
+    const start = (studentPage - 1) * pageSize;
+    return students.slice(start, start + pageSize);
+  }, [students, studentPage]);
+
   const handleSelectAll = (checked: boolean) => {
+    const pageIds = pagedStudents.map((s) => s.id!).filter(Boolean);
+
     if (checked) {
-      setSelectedStudents(students.map((s) => s.id!).filter(Boolean));
+      setSelectedStudents((prev) => Array.from(new Set([...prev, ...pageIds])));
     } else {
-      setSelectedStudents([]);
+      setSelectedStudents((prev) => prev.filter((id) => !pageIds.includes(id)));
     }
   };
 
   const handleSelectStudent = (studentId: number, checked: boolean) => {
     if (checked) {
-      setSelectedStudents((prev) => [...prev, studentId]);
+      setSelectedStudents((prev) =>
+        prev.includes(studentId) ? prev : [...prev, studentId]
+      );
     } else {
       setSelectedStudents((prev) => prev.filter((id) => id !== studentId));
     }
@@ -55,7 +70,6 @@ export default function LectureDetail() {
         lectureId: lectureIdNum,
         data: { studentIds },
       });
-      // Refetch lecture detail
       queryClient.invalidateQueries({ queryKey: ["/api/lectures"] });
       setIsAddModalOpen(false);
     } catch (error) {
@@ -135,6 +149,7 @@ export default function LectureDetail() {
               </Button>
             </div>
           </div>
+
           <Table
             columns={[
               {
@@ -143,8 +158,10 @@ export default function LectureDetail() {
                     type="checkbox"
                     className="checkbox checkbox-sm"
                     checked={
-                      selectedStudents.length === students.length &&
-                      students.length > 0
+                      pagedStudents.length > 0 &&
+                      pagedStudents.every((s) =>
+                        selectedStudents.includes(s.id!)
+                      )
                     }
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
@@ -163,7 +180,8 @@ export default function LectureDetail() {
               },
               {
                 header: "",
-                accessor: (_, index) => index + 1,
+                accessor: (_, index) =>
+                  (studentPage - 1) * pageSize + index + 1,
                 className: "w-16",
               },
               {
@@ -178,10 +196,24 @@ export default function LectureDetail() {
                 ),
               },
             ]}
-            data={students}
+            data={pagedStudents}
             keyExtractor={(student) => student.id!}
             emptyMessage="등록된 학생이 없습니다."
           />
+
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-gray-600">
+              총 {students.length}명 · {studentTotalPages}페이지 · 현재{" "}
+              {studentPage}페이지
+            </div>
+
+            <UserPagination
+              page={studentPage}
+              lastPage={studentTotalPages}
+              onChange={(p) => setStudentPage(p)}
+              maxButtons={5}
+            />
+          </div>
         </Card>
 
         <Card title="과제 제출">

@@ -17,8 +17,16 @@ export default function PrincipalDashBoard() {
     role: "STUDENT",
   });
 
-  const teachersRaw = teachersRes?.data ?? [];
-  const studentsRaw = studentsRes?.data ?? [];
+  const teachersData: any = teachersRes?.data;
+  const studentsData: any = studentsRes?.data;
+
+  const teachersRaw = Array.isArray(teachersData)
+    ? teachersData[0]?.content ?? []
+    : teachersData?.content ?? [];
+
+  const studentsRaw = Array.isArray(studentsData)
+    ? studentsData[0]?.content ?? []
+    : studentsData?.content ?? [];
 
   const teachers = teachersRaw.slice(0, 6).map((u, idx) => ({
     no: idx + 1,

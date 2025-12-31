@@ -1,144 +1,175 @@
-import { useState, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import CreateModal from "../../components/admin/CreateModal";
-import SuccessModal from "../../components/admin/SuccessModal";
-import Table from "../../components/common/Table";
-import Card from "../../components/common/Card";
+import { useMemo, useState, useEffect } from "react";
 import Page from "../../components/common/Page";
+import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
-import { useAllUsers } from "../../hooks/admin";
-import { getGetAllUsersQueryKey } from "../../api/generated/edutrack";
-import { roleToKorean, koreanToRole } from "../../utils/role";
+import Table from "../../components/common/Table";
+import UserPagination from "../../components/common/principal/UserPagination";
 
-export default function UserManagement() {
-  const queryClient = useQueryClient();
+import { useGetAllUsers } from "../../api/generated/edutrack";
+import type { UserSearchResultResponse } from "../../api/generated/edutrack";
 
-  const [searchType, setSearchType] = useState("회원을 선택하세요");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeSearchType, setActiveSearchType] = useState("회원을 선택하세요");
-  const [activeSearchQuery, setActiveSearchQuery] = useState("");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState("");
+type UiUserRow = {
+  id: number;
+  name: string;
+  userType: string;
+  userId: string;
+  phone: string;
+  email: string;
+};
 
-  const { users, totalCount, isLoading, isError } = useAllUsers();
+export default function AdminUserManagement() {
+  // UI 상태
+  const [page, setPage] = useState(1); // 1-base
+  const size = 10;
 
-  const filteredUsers = useMemo(() => {
-    if (activeSearchType === "회원을 선택하세요" && !activeSearchQuery.trim()) {
-      return users;
-    }
+  const [keyword, setKeyword] = useState("");
+  const [role, setRole] = useState<"" | "STUDENT" | "TEACHER" | "PRINCIPAL">(
+    ""
+  );
 
-    const targetRole = koreanToRole(activeSearchType);
+  const trimmed = keyword.trim();
 
-    return users.filter((user) => {
-      const matchesRole = !targetRole || user.role === targetRole;
-      const matchesQuery =
-        !activeSearchQuery.trim() ||
-        user.loginId?.toLowerCase().includes(activeSearchQuery.toLowerCase()) ||
-        user.name?.toLowerCase().includes(activeSearchQuery.toLowerCase());
-      return matchesRole && matchesQuery;
+  // ✅ 전체를 크게 받아오기 (프론트에서 필터+페이지네이션)
+  const fetchPage = 0;
+  const fetchSize = 10000; // 데이터 많으면 더 키우거나, 백엔드에 맞게 조절
+
+  const query = useGetAllUsers({
+    axios: {
+      params: {
+        page: fetchPage,
+        size: fetchSize,
+      },
+    },
+    query: {
+      enabled: true,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      keepPreviousData: true as any,
+      queryKey: ["adminUsersAll", fetchPage, fetchSize],
+    },
+  });
+
+  const allUsers: UserSearchResultResponse[] = query.data?.data?.users ?? [];
+
+  // ✅ ADMIN 제외 + role/keyword 필터링
+  const filteredAll = useMemo(() => {
+    const kw = trimmed.toLowerCase();
+
+    return allUsers.filter((u) => {
+      // 1) 관리자 제외
+      if (u.role === "ADMIN") return false;
+
+      // 2) 역할 필터 (선택된 경우만)
+      if (role && u.role !== role) return false;
+
+      // 3) 키워드 필터 (선택된 경우만)
+      if (kw) {
+        const hay = [u.name, u.loginId, u.phone, u.email, u.role]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        if (!hay.includes(kw)) return false;
+      }
+
+      return true;
     });
-  }, [users, activeSearchType, activeSearchQuery]);
+  }, [allUsers, role, trimmed]);
 
-  const handleSearch = () => {
-    setActiveSearchType(searchType);
-    setActiveSearchQuery(searchQuery);
+  // ✅ 프론트 페이지네이션 계산
+  const totalCount = filteredAll.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / size));
+
+  // 페이지가 필터링으로 줄어들면 범위 보정
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [totalPages]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pageUsers = useMemo(() => {
+    const start = (page - 1) * size;
+    return filteredAll.slice(start, start + size);
+  }, [filteredAll, page]);
+
+  const rows: UiUserRow[] = useMemo(() => {
+    return pageUsers.map((u) => ({
+      id: u.id ?? 0,
+      name: u.name ?? "-",
+      userType:
+        u.role === "TEACHER"
+          ? "강사"
+          : u.role === "STUDENT"
+          ? "학생"
+          : u.role === "PRINCIPAL"
+          ? "원장"
+          : u.role ?? "-",
+      userId: u.loginId ?? "-",
+      phone: u.phone ?? "-",
+      email: u.email ?? "-",
+    }));
+  }, [pageUsers]);
+
+  const onSearch = () => {
+    setPage(1);
   };
-
-  const handleDirectorCreated = (code: string) => {
-    queryClient.invalidateQueries({ queryKey: getGetAllUsersQueryKey() });
-    setIsCreateModalOpen(false);
-    setGeneratedCode(code);
-    setIsSuccessModalOpen(true);
-  };
-
-  if (isLoading) {
-    return (
-      <Page>
-        <Card>
-          <div className="flex justify-center items-center h-64">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        </Card>
-      </Page>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Page>
-        <Card>
-          <p className="text-red-500">데이터를 불러오는데 실패했습니다.</p>
-        </Card>
-      </Page>
-    );
-  }
 
   return (
     <Page>
-      <Card>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">
-            사용자 관리
-            <span className="text-sm font-normal text-gray-500 ml-2">
-              (총 {totalCount}명)
-            </span>
-          </h2>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            원장 계정 생성
-          </Button>
-        </div>
-        <div className="flex gap-3 mb-6">
+      <Card className="mb-4" title="사용자 조회">
+        <div className="flex gap-3 items-center">
           <select
-            className="select select-bordered w-48 bg-white"
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
+            value={role}
+            onChange={(e) =>
+              setRole(
+                e.target.value as "" | "STUDENT" | "TEACHER" | "PRINCIPAL"
+              )
+            }
+            className="select"
           >
-            <option disabled>회원을 선택하세요</option>
-            <option>원장</option>
-            <option>선생님</option>
-            <option>학생</option>
+            <option value="">전체</option>
+            <option value="TEACHER">강사</option>
+            <option value="STUDENT">학생</option>
+            <option value="PRINCIPAL">원장</option>
           </select>
+
           <input
-            type="text"
-            placeholder="아이디 또는 이름 검색"
-            className="input input-bordered flex-1 bg-white"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="input w-full"
+            placeholder="이름/아이디/전화번호/이메일 검색"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onSearch();
+            }}
           />
-          <Button variant="neutral" onClick={handleSearch}>
-            검색
-          </Button>
+
+          <Button onClick={onSearch}>검색</Button>
         </div>
+      </Card>
+
+      <Card>
         <Table
           columns={[
-            {
-              header: "NO",
-              accessor: (_, index) => index + 1,
-              className: "w-16 text-center",
-            },
-            { header: "이름", accessor: (user) => user.name ?? "-" },
-            { header: "직책", accessor: (user) => roleToKorean(user.role) },
-            { header: "아이디", accessor: (user) => user.loginId ?? "-" },
-            { header: "이메일", accessor: (user) => user.email ?? "-" },
-            { header: "전화번호", accessor: (user) => user.phone ?? "-" },
+            { header: "이름", accessor: "name" },
+            { header: "역할", accessor: "userType" },
+            { header: "아이디", accessor: "userId" },
+            { header: "전화번호", accessor: "phone" },
+            { header: "이메일", accessor: "email" },
           ]}
-          data={filteredUsers}
-          keyExtractor={(user) => user.id ?? 0}
-          emptyMessage="검색 결과가 없습니다."
+          data={rows}
+          keyExtractor={(row: UiUserRow) => row.id || row.userId}
+          emptyMessage={
+            query.isLoading ? "불러오는 중..." : "사용자 정보가 없습니다."
+          }
         />
+
+        <div className="flex items-center justify-end mt-4">
+          <UserPagination
+            page={page}
+            lastPage={totalPages}
+            onChange={(p) => setPage(p)}
+            maxButtons={5}
+          />
+        </div>
       </Card>
-      <CreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={handleDirectorCreated}
-      />
-      <SuccessModal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        generatedCode={generatedCode}
-      />
     </Page>
   );
 }

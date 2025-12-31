@@ -103,6 +103,16 @@ export interface SearchAllUserResponse {
   users?: UserSearchResultResponse[];
   /** 전체 사용자 수 */
   totalCount?: number;
+  /** 전체 페이지 수 */
+  totalPages?: number;
+  /** 현재 페이지 */
+  currentPage?: number;
+  /** 페이지 크기 */
+  pageSize?: number;
+  /** 다음 페이지 존재 여부 */
+  hasNextPage?: boolean;
+  /** 이전 페이지 존재 여부 */
+  hasPreviousPage?: boolean;
 }
 
 export interface PrincipalRegistrationRequest {
